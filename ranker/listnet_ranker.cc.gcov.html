@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Test Coverage for xapian-letor 1ea61830e52d - ranker/listnet_ranker.cc</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">ranker</a> - listnet_ranker.cc<span style="font-size: 80%;"> (source / <a href="listnet_ranker.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Test Coverage for xapian-letor 1ea61830e52d</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">84</td>
+            <td class="headerCovTableEntry">87</td>
+            <td class="headerCovTableEntryHi">96.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2017-07-23 17:44:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">9</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntryHi">90.0 %</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntry">63</td>
+            <td class="headerCovTableEntry">112</td>
+            <td class="headerCovTableEntryLo">56.2 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">           Branch data     Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>                :            : /** @file listnet_ranker.cc</a>
+<span class="lineNum">       2 </span>                :            :  *  @brief Implementation of ListNetRanker
+<span class="lineNum">       3 </span>                :            :  */
+<span class="lineNum">       4 </span>                :            : /* Copyright (C) 2014 Hanxiao Sun
+<span class="lineNum">       5 </span>                :            :  * Copyright (C) 2016 Ayush Tomar
+<span class="lineNum">       6 </span>                :            :  *
+<span class="lineNum">       7 </span>                :            :  * This program is free software; you can redistribute it and/or
+<span class="lineNum">       8 </span>                :            :  * modify it under the terms of the GNU General Public License as
+<span class="lineNum">       9 </span>                :            :  * published by the Free Software Foundation; either version 2 of the
+<span class="lineNum">      10 </span>                :            :  * License, or (at your option) any later version.
+<span class="lineNum">      11 </span>                :            :  *
+<span class="lineNum">      12 </span>                :            :  * This program is distributed in the hope that it will be useful,
+<span class="lineNum">      13 </span>                :            :  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+<span class="lineNum">      14 </span>                :            :  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<span class="lineNum">      15 </span>                :            :  * GNU General Public License for more details.
+<span class="lineNum">      16 </span>                :            :  *
+<span class="lineNum">      17 </span>                :            :  * You should have received a copy of the GNU General Public License
+<span class="lineNum">      18 </span>                :            :  * along with this program; if not, write to the Free Software
+<span class="lineNum">      19 </span>                :            :  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
+<span class="lineNum">      20 </span>                :            :  * USA
+<span class="lineNum">      21 </span>                :            :  */
+<span class="lineNum">      22 </span>                :            : 
+<span class="lineNum">      23 </span>                :            : /*
+<span class="lineNum">      24 </span>                :            : ListNET is adapted from the paper:
+<span class="lineNum">      25 </span>                :            : Cao, Zhe, et al. &quot;Learning to rank: from pairwise approach to listwise approach.&quot;
+<span class="lineNum">      26 </span>                :            : Proceedings of the 24th international conference on Machine learning. ACM, 2007.
+<span class="lineNum">      27 </span>                :            : */
+<span class="lineNum">      28 </span>                :            : #include &lt;config.h&gt;
+<span class="lineNum">      29 </span>                :            : 
+<span class="lineNum">      30 </span>                :            : #include &quot;xapian-letor/ranker.h&quot;
+<span class="lineNum">      31 </span>                :            : 
+<span class="lineNum">      32 </span>                :            : #include &quot;debuglog.h&quot;
+<span class="lineNum">      33 </span>                :            : #include &quot;serialise-double.h&quot;
+<span class="lineNum">      34 </span>                :            : 
+<span class="lineNum">      35 </span>                :            : #include &lt;algorithm&gt;
+<span class="lineNum">      36 </span>                :            : #include &lt;cmath&gt;
+<span class="lineNum">      37 </span>                :            : #include &lt;cstdlib&gt;
+<span class="lineNum">      38 </span>                :            : #include &lt;fstream&gt;
+<span class="lineNum">      39 </span>                :            : #include &lt;iomanip&gt;
+<span class="lineNum">      40 </span>                :            : #include &lt;limits&gt;
+<span class="lineNum">      41 </span>                :            : #include &lt;sstream&gt;
+<span class="lineNum">      42 </span>                :            : #include &lt;vector&gt;
+<span class="lineNum">      43 </span>                :            : 
+<span class="lineNum">      44 </span>                :            : using namespace std;
+<span class="lineNum">      45 </span>                :            : using namespace Xapian;
+<span class="lineNum">      46 </span>                :            : 
+<span class="lineNum">      47 </span>                :            : /// A vector holding ground truth and prediction score probability distribution vectors.
+<a name="48"><span class="lineNum">      48 </span>                :            : typedef vector &lt;vector &lt;double&gt; &gt; prob_distrib_vector;</a>
+<span class="lineNum">      49 </span>                :            : 
+<span class="lineNum">      50 </span>                :<span class="lineCov">          2 : ListNETRanker::~ListNETRanker() {</span>
+<span class="lineNum">      51 </span>                :            :     LOGCALL_DTOR(API, &quot;ListNETRanker&quot;);
+<span class="lineNum">      52 </span>        [<span class="branchNoCov" title="Branch 2 was not taken"> - </span><span class="branchCov" title="Branch 3 was taken 1 time"> + </span>]:<span class="lineCov">          1 : }</span>
+<a name="53"><span class="lineNum">      53 </span>                :            : </a>
+<span class="lineNum">      54 </span>                :            : static double
+<span class="lineNum">      55 </span>                :<span class="lineCov">        112 : calculateInnerProduct(const vector&lt;double&gt; &amp;parameters, const vector&lt;double&gt; &amp;fvals) {</span>
+<span class="lineNum">      56 </span>                :            :     LOGCALL_STATIC_VOID(API, &quot;calculateInnerProduct&quot;, parameters | fvals);
+<span class="lineNum">      57 </span>                :<span class="lineCov">        112 :     double inner_product = 0.0;</span>
+<span class="lineNum">      58 </span>        [<span class="branchCov" title="Branch 1 was taken 2128 times"> + </span><span class="branchCov" title="Branch 2 was taken 112 times"> + </span>]:<span class="lineCov">       2240 :     for (size_t i = 0; i &lt; fvals.size(); ++i)</span>
+<span class="lineNum">      59 </span>                :<span class="lineCov">       2128 :         inner_product += parameters[i] * fvals[i];</span>
+<span class="lineNum">      60 </span>                :<span class="lineCov">        112 :     return inner_product;</span>
+<span class="lineNum">      61 </span>                :            : }
+<span class="lineNum">      62 </span>                :            : 
+<a name="63"><span class="lineNum">      63 </span>                :            : // From Theorem (8) in Cao et al. &quot;Learning to rank: from pairwise approach to listwise approach.&quot;</a>
+<span class="lineNum">      64 </span>                :            : static prob_distrib_vector
+<span class="lineNum">      65 </span>                :<span class="lineCov">         28 : initializeProbability(const vector&lt;FeatureVector&gt; &amp;feature_vectors, const vector&lt;double&gt; &amp;new_parameters) {</span>
+<span class="lineNum">      66 </span>                :            :     LOGCALL_STATIC_VOID(API, &quot;initializeProbability&quot;, feature_vectors | new_parameters);
+<span class="lineNum">      67 </span>                :            : 
+<span class="lineNum">      68 </span>                :            :     // probability distribution, y is ground truth, while z is predict score
+<span class="lineNum">      69 </span>                :<span class="lineCov">         56 :     vector&lt;double&gt; prob_y;</span>
+<span class="lineNum">      70 </span>                :<span class="lineCov">         56 :     vector&lt;double&gt; prob_z;</span>
+<span class="lineNum">      71 </span>                :<span class="lineCov">         28 :     double expsum_y = 0.0;</span>
+<span class="lineNum">      72 </span>                :<span class="lineCov">         28 :     double expsum_z = 0.0;</span>
+<span class="lineNum">      73 </span>                :            : 
+<span class="lineNum">      74 </span>        [<span class="branchCov" title="Branch 3 was taken 56 times"> + </span><span class="branchCov" title="Branch 4 was taken 28 times"> + </span>]:<span class="lineCov">         84 :     for (auto&amp;&amp; v : feature_vectors) {</span>
+<span class="lineNum">      75 </span>        [<span class="branchCov" title="Branch 1 was taken 56 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         56 :         expsum_y += exp(v.get_label());</span>
+<span class="lineNum">      76 </span>        [<span class="branchCov" title="Branch 1 was taken 56 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         56 :         expsum_z += exp(calculateInnerProduct(new_parameters, v.get_fvals()));</span>
+<span class="lineNum">      77 </span>                :            :     }
+<span class="lineNum">      78 </span>        [<span class="branchCov" title="Branch 3 was taken 56 times"> + </span><span class="branchCov" title="Branch 4 was taken 28 times"> + </span>]:<span class="lineCov">         84 :     for (auto&amp;&amp; v : feature_vectors) {</span>
+<span class="lineNum">      79 </span>[<span class="branchCov" title="Branch 1 was taken 56 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 56 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">         56 :         prob_y.push_back(exp(v.get_label()) / expsum_y);</span>
+<span class="lineNum">      80 </span>[<span class="branchCov" title="Branch 1 was taken 56 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 5 was taken 56 times"> + </span><span class="branchNoCov" title="Branch 6 was not taken"> - </span>]:<span class="lineCov">         56 :         prob_z.push_back(exp(calculateInnerProduct(new_parameters, v.get_fvals())) / expsum_z);</span>
+<span class="lineNum">      81 </span>                :            :     }
+<span class="lineNum">      82 </span>                :<span class="lineCov">         28 :     vector&lt;vector&lt;double&gt;&gt; prob;</span>
+<span class="lineNum">      83 </span>        [<span class="branchCov" title="Branch 1 was taken 28 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         28 :     prob.push_back(prob_y);</span>
+<span class="lineNum">      84 </span>        [<span class="branchCov" title="Branch 1 was taken 28 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         28 :     prob.push_back(prob_z);</span>
+<span class="lineNum">      85 </span>                :<span class="lineCov">         56 :     return prob;</span>
+<span class="lineNum">      86 </span>                :            : }
+<span class="lineNum">      87 </span>                :            : 
+<a name="88"><span class="lineNum">      88 </span>                :            : // Equation (6) in paper Cao et al. &quot;Learning to rank: from pairwise approach to listwise approach.&quot;</a>
+<span class="lineNum">      89 </span>                :            : static vector&lt;double&gt;
+<span class="lineNum">      90 </span>                :<span class="lineCov">         28 : calculateGradient(const vector&lt;FeatureVector&gt; &amp;feature_vectors, const prob_distrib_vector &amp;prob) {</span>
+<span class="lineNum">      91 </span>                :            :     LOGCALL_STATIC_VOID(API, &quot;calculateGradient&quot;, feature_vectors | prob);
+<span class="lineNum">      92 </span>                :            : 
+<span class="lineNum">      93 </span>[<span class="branchCov" title="Branch 3 was taken 28 times"> + </span><span class="branchNoCov" title="Branch 4 was not taken"> - </span>][<span class="branchCov" title="Branch 6 was taken 28 times"> + </span><span class="branchNoCov" title="Branch 7 was not taken"> - </span>]:<span class="lineCov">         28 :     vector&lt;double&gt; gradient(feature_vectors[0].get_fcount(), 0);</span>
+<span class="lineNum">      94 </span>                :            : 
+<span class="lineNum">      95 </span>                :            :     // Hold ground truth probability distribution
+<span class="lineNum">      96 </span>        [<span class="branchCov" title="Branch 2 was taken 28 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">         56 :     const vector&lt;double&gt; prob_y(prob[0]);</span>
+<span class="lineNum">      97 </span>                :            :     // Hold prediction score probability distribution
+<span class="lineNum">      98 </span>        [<span class="branchCov" title="Branch 2 was taken 28 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">         56 :     const vector&lt;double&gt; prob_z(prob[1]);</span>
+<span class="lineNum">      99 </span>                :            : 
+<span class="lineNum">     100 </span>        [<span class="branchCov" title="Branch 1 was taken 56 times"> + </span><span class="branchCov" title="Branch 2 was taken 28 times"> + </span>]:<span class="lineCov">         84 :     for (size_t i = 0; i &lt; feature_vectors.size(); ++i) {</span>
+<span class="lineNum">     101 </span>        [<span class="branchCov" title="Branch 2 was taken 56 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">        112 :         vector&lt;double&gt; fvals = feature_vectors[i].get_fvals();</span>
+<span class="lineNum">     102 </span>        [<span class="branchCov" title="Branch 1 was taken 1064 times"> + </span><span class="branchCov" title="Branch 2 was taken 56 times"> + </span>]:<span class="lineCov">       1120 :         for (size_t k = 0; k &lt; fvals.size(); ++k) {</span>
+<span class="lineNum">     103 </span>                :<span class="lineCov">       1064 :             double first_term = - prob_y[i] * fvals[k];</span>
+<span class="lineNum">     104 </span>                :<span class="lineCov">       1064 :             gradient[k] += first_term;</span>
+<span class="lineNum">     105 </span>                :            : 
+<span class="lineNum">     106 </span>                :<span class="lineCov">       1064 :             double second_term = prob_z[i] * fvals[k];</span>
+<span class="lineNum">     107 </span>                :<span class="lineCov">       1064 :             gradient[k] += second_term;</span>
+<span class="lineNum">     108 </span>                :            :         }
+<span class="lineNum">     109 </span>                :            :     }
+<span class="lineNum">     110 </span>                :<span class="lineCov">         56 :     return gradient;</span>
+<span class="lineNum">     111 </span>                :            : }
+<a name="112"><span class="lineNum">     112 </span>                :            : </a>
+<span class="lineNum">     113 </span>                :            : static void
+<span class="lineNum">     114 </span>                :<span class="lineCov">         28 : updateParameters(vector&lt;double&gt; &amp;new_parameters, const vector&lt;double&gt; &amp;gradient, double learning_rate) {</span>
+<span class="lineNum">     115 </span>                :            :     LOGCALL_STATIC_VOID(API, &quot;updateParameters&quot;, new_parameters | gradient | learning_rate);
+<span class="lineNum">     116 </span>        [<span class="branchCov" title="Branch 1 was taken 532 times"> + </span><span class="branchCov" title="Branch 2 was taken 28 times"> + </span>]:<span class="lineCov">        560 :     for (size_t i = 0; i &lt; new_parameters.size(); ++i) {</span>
+<span class="lineNum">     117 </span>                :<span class="lineCov">        532 :         new_parameters[i] -= gradient[i] * learning_rate;</span>
+<span class="lineNum">     118 </span>                :            :     }
+<span class="lineNum">     119 </span>                :<span class="lineCov">         28 : }</span>
+<a name="120"><span class="lineNum">     120 </span>                :            : </a>
+<span class="lineNum">     121 </span>                :            : void
+<span class="lineNum">     122 </span>                :<span class="lineCov">          2 : ListNETRanker::train(const std::vector&lt;Xapian::FeatureVector&gt; &amp; training_data) {</span>
+<span class="lineNum">     123 </span>                :            :     LOGCALL_VOID(API, &quot;ListNETRanker::train&quot;, training_data);
+<span class="lineNum">     124 </span>                :<span class="lineCov">          2 :     size_t fvv_len = training_data.size();</span>
+<span class="lineNum">     125 </span>                :<span class="lineCov">          2 :     int feature_cnt = -1;</span>
+<span class="lineNum">     126 </span>        [<span class="branchCov" title="Branch 0 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">          2 :     if (fvv_len != 0) {</span>
+<span class="lineNum">     127 </span>        [<span class="branchCov" title="Branch 2 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">          2 :         feature_cnt = training_data[0].get_fcount();</span>
+<span class="lineNum">     128 </span>                :            :     } else {
+<span class="lineNum">     129 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw LetorInternalError(&quot;Training data is empty. Check training file.&quot;);</span>
+<span class="lineNum">     130 </span>                :            :     }
+<span class="lineNum">     131 </span>                :            :     // initialize the parameters for neural network
+<span class="lineNum">     132 </span>        [<span class="branchCov" title="Branch 2 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">          4 :     vector&lt;double&gt; new_parameters(feature_cnt, 0.0);</span>
+<span class="lineNum">     133 </span>                :            : 
+<span class="lineNum">     134 </span>                :            :     // iterations
+<span class="lineNum">     135 </span>        [<span class="branchCov" title="Branch 0 was taken 28 times"> + </span><span class="branchCov" title="Branch 1 was taken 2 times"> + </span>]:<span class="lineCov">         30 :     for (int iter_num = 1; iter_num &lt; iterations; ++iter_num) {</span>
+<span class="lineNum">     136 </span>                :            :         // initialize Probability distributions of y and z
+<span class="lineNum">     137 </span>        [<span class="branchCov" title="Branch 1 was taken 28 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         56 :         prob_distrib_vector prob = initializeProbability(training_data, new_parameters);</span>
+<span class="lineNum">     138 </span>                :            :         // compute gradient
+<span class="lineNum">     139 </span>        [<span class="branchCov" title="Branch 1 was taken 28 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         56 :         vector&lt;double&gt; gradient = calculateGradient(training_data, prob);</span>
+<span class="lineNum">     140 </span>                :            :         // update parameters: w = w - gradient * learningRate
+<span class="lineNum">     141 </span>                :<span class="lineCov">         28 :         updateParameters(new_parameters, gradient, learning_rate);</span>
+<span class="lineNum">     142 </span>                :            :     }
+<span class="lineNum">     143 </span>                :<span class="lineCov">          2 :     swap(parameters, new_parameters);</span>
+<span class="lineNum">     144 </span>                :<span class="lineCov">          2 : }</span>
+<a name="145"><span class="lineNum">     145 </span>                :            : </a>
+<span class="lineNum">     146 </span>                :            : void
+<span class="lineNum">     147 </span>                :<span class="lineCov">          2 : ListNETRanker::save_model_to_metadata(const string &amp; model_key) {</span>
+<span class="lineNum">     148 </span>                :            :     LOGCALL_VOID(API, &quot;ListNETRanker::save_model_to_metadata&quot;, model_key);
+<span class="lineNum">     149 </span>[<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">          4 :     Xapian::WritableDatabase letor_db(get_database_path());</span>
+<span class="lineNum">     150 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          4 :     string key = model_key;</span>
+<span class="lineNum">     151 </span>        [<span class="branchCov" title="Branch 1 was taken 1 time"> + </span><span class="branchCov" title="Branch 2 was taken 1 time"> + </span>]:<span class="lineCov">          2 :     if (key.empty()) {</span>
+<span class="lineNum">     152 </span>        [<span class="branchCov" title="Branch 1 was taken 1 time"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          1 :         key = &quot;ListNET.model.default&quot;;</span>
+<span class="lineNum">     153 </span>                :            :     }
+<span class="lineNum">     154 </span>                :<span class="lineCov">          4 :     string model_data;</span>
+<span class="lineNum">     155 </span>        [<span class="branchCov" title="Branch 1 was taken 38 times"> + </span><span class="branchCov" title="Branch 2 was taken 2 times"> + </span>]:<span class="lineCov">         40 :     for (size_t i = 0; i &lt; parameters.size(); ++i)</span>
+<span class="lineNum">     156 </span>[<span class="branchCov" title="Branch 2 was taken 38 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>][<span class="branchCov" title="Branch 5 was taken 38 times"> + </span><span class="branchNoCov" title="Branch 6 was not taken"> - </span>]:<span class="lineCov">         38 :         model_data += serialise_double(parameters[i]);</span>
+<span class="lineNum">     157 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          2 :     letor_db.set_metadata(key, model_data);</span>
+<span class="lineNum">     158 </span>                :<span class="lineCov">          2 : }</span>
+<a name="159"><span class="lineNum">     159 </span>                :            : </a>
+<span class="lineNum">     160 </span>                :            : void
+<span class="lineNum">     161 </span>                :<span class="lineCov">          6 : ListNETRanker::load_model_from_metadata(const string &amp; model_key) {</span>
+<span class="lineNum">     162 </span>                :            :     LOGCALL_VOID(API, &quot;ListNETRanker::load_model_from_metadata&quot;, model_key);
+<span class="lineNum">     163 </span>[<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">         12 :     Xapian::Database letor_db(get_database_path());</span>
+<span class="lineNum">     164 </span>        [<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         12 :     string key = model_key;</span>
+<span class="lineNum">     165 </span>        [<span class="branchCov" title="Branch 1 was taken 1 time"> + </span><span class="branchCov" title="Branch 2 was taken 5 times"> + </span>]:<span class="lineCov">          6 :     if (key.empty()) {</span>
+<span class="lineNum">     166 </span>        [<span class="branchCov" title="Branch 1 was taken 1 time"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          1 :         key = &quot;ListNET.model.default&quot;;</span>
+<span class="lineNum">     167 </span>                :            :     }
+<span class="lineNum">     168 </span>        [<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         12 :     string model_data = letor_db.get_metadata(key);</span>
+<span class="lineNum">     169 </span>                :            :     // Throw exception if no model data associated with key
+<span class="lineNum">     170 </span>        [<span class="branchNoCov" title="Branch 1 was not taken"> - </span><span class="branchCov" title="Branch 2 was taken 6 times"> + </span>]:<span class="lineCov">          6 :     if (model_data.empty()) {</span>
+<span class="lineNum">     171 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw Xapian::LetorInternalError(&quot;No model found. Check key.&quot;);</span>
+<span class="lineNum">     172 </span>                :            :     }
+<span class="lineNum">     173 </span>                :<span class="lineCov">         12 :     vector&lt;double&gt; loaded_parameters;</span>
+<span class="lineNum">     174 </span>                :<span class="lineCov">          6 :     const char *ptr = model_data.data();</span>
+<span class="lineNum">     175 </span>                :<span class="lineCov">          6 :     const char *end = ptr + model_data.size();</span>
+<span class="lineNum">     176 </span>        [<span class="branchCov" title="Branch 0 was taken 114 times"> + </span><span class="branchCov" title="Branch 1 was taken 6 times"> + </span>]:<span class="lineCov">        120 :     while (ptr != end) {</span>
+<span class="lineNum">     177 </span>[<span class="branchCov" title="Branch 1 was taken 114 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 114 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">        114 :         loaded_parameters.push_back(unserialise_double(&amp;ptr, end));</span>
+<span class="lineNum">     178 </span>                :            :     }
+<span class="lineNum">     179 </span>                :<span class="lineCov">          6 :     swap(parameters, loaded_parameters);</span>
+<span class="lineNum">     180 </span>                :<span class="lineCov">          6 : }</span>
+<a name="181"><span class="lineNum">     181 </span>                :            : </a>
+<span class="lineNum">     182 </span>                :            : std::vector&lt;FeatureVector&gt;
+<span class="lineNum">     183 </span>                :<span class="lineCov">          3 : ListNETRanker::rank_fvv(const std::vector&lt;FeatureVector&gt; &amp; fvv) const {</span>
+<span class="lineNum">     184 </span>                :            :     LOGCALL(API, std::vector&lt;FeatureVector&gt;, &quot;ListNETRanker::rank_fvv&quot;, fvv);
+<span class="lineNum">     185 </span>                :<span class="lineCov">          3 :     std::vector&lt;FeatureVector&gt; testfvv = fvv;</span>
+<span class="lineNum">     186 </span>        [<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchCov" title="Branch 2 was taken 3 times"> + </span>]:<span class="lineCov">          9 :     for (size_t i = 0; i &lt; testfvv.size(); ++i) {</span>
+<span class="lineNum">     187 </span>                :<span class="lineCov">          6 :         double listnet_score = 0;</span>
+<span class="lineNum">     188 </span>        [<span class="branchCov" title="Branch 2 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">         12 :         std::vector&lt;double&gt; fvals = testfvv[i].get_fvals();</span>
+<span class="lineNum">     189 </span>        [<span class="branchNoCov" title="Branch 2 was not taken"> - </span><span class="branchCov" title="Branch 3 was taken 6 times"> + </span>]:<span class="lineCov">          6 :         if (fvals.size() != parameters.size())</span>
+<span class="lineNum">     190 </span>                :            :             throw LetorInternalError(&quot;Model incompatible. Make sure that you are using &quot;
+<span class="lineNum">     191 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :                                      &quot;the same set of Features using which the model was created.&quot;);</span>
+<span class="lineNum">     192 </span>        [<span class="branchCov" title="Branch 1 was taken 114 times"> + </span><span class="branchCov" title="Branch 2 was taken 6 times"> + </span>]:<span class="lineCov">        120 :         for (size_t j = 0; j &lt; fvals.size(); ++j)</span>
+<span class="lineNum">     193 </span>                :<span class="lineCov">        114 :             listnet_score += fvals[j] * parameters[j];</span>
+<span class="lineNum">     194 </span>        [<span class="branchCov" title="Branch 2 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">          6 :         testfvv[i].set_score(listnet_score);</span>
+<span class="lineNum">     195 </span>                :            :     }
+<span class="lineNum">     196 </span>                :<span class="lineCov">          3 :     return testfvv;</span>
+<span class="lineNum">     197 </span>                :            : }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

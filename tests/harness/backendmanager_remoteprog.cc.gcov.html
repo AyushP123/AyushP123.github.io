@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Test Coverage for xapian-letor 1ea61830e52d - tests/harness/backendmanager_remoteprog.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">tests/harness</a> - backendmanager_remoteprog.cc<span style="font-size: 80%;"> (source / <a href="backendmanager_remoteprog.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Test Coverage for xapian-letor 1ea61830e52d</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">16</td>
+            <td class="headerCovTableEntryLo">12.5 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2017-07-23 17:44:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryLo">16.7 %</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">24</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">           Branch data     Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>                :            : /** @file backendmanager_remoteprog.cc</a>
+<span class="lineNum">       2 </span>                :            :  * @brief BackendManager subclass for remoteprog databases.
+<span class="lineNum">       3 </span>                :            :  */
+<span class="lineNum">       4 </span>                :            : /* Copyright (C) 2007,2008,2009 Olly Betts
+<span class="lineNum">       5 </span>                :            :  * Copyright (C) 2008 Lemur Consulting Ltd
+<span class="lineNum">       6 </span>                :            :  *
+<span class="lineNum">       7 </span>                :            :  * This program is free software; you can redistribute it and/or
+<span class="lineNum">       8 </span>                :            :  * modify it under the terms of the GNU General Public License as
+<span class="lineNum">       9 </span>                :            :  * published by the Free Software Foundation; either version 2 of the
+<span class="lineNum">      10 </span>                :            :  * License, or (at your option) any later version.
+<span class="lineNum">      11 </span>                :            :  *
+<span class="lineNum">      12 </span>                :            :  * This program is distributed in the hope that it will be useful,
+<span class="lineNum">      13 </span>                :            :  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+<span class="lineNum">      14 </span>                :            :  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<span class="lineNum">      15 </span>                :            :  * GNU General Public License for more details.
+<span class="lineNum">      16 </span>                :            :  *
+<span class="lineNum">      17 </span>                :            :  * You should have received a copy of the GNU General Public License
+<span class="lineNum">      18 </span>                :            :  * along with this program; if not, write to the Free Software
+<span class="lineNum">      19 </span>                :            :  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+<span class="lineNum">      20 </span>                :            :  */
+<span class="lineNum">      21 </span>                :            : 
+<span class="lineNum">      22 </span>                :            : #include &lt;config.h&gt;
+<span class="lineNum">      23 </span>                :            : 
+<span class="lineNum">      24 </span>                :            : #include &quot;backendmanager_remoteprog.h&quot;
+<span class="lineNum">      25 </span>                :            : 
+<span class="lineNum">      26 </span>                :            : #include &lt;xapian.h&gt;
+<span class="lineNum">      27 </span>                :            : 
+<span class="lineNum">      28 </span>                :            : #ifdef HAVE_VALGRIND
+<span class="lineNum">      29 </span>                :            : # include &lt;valgrind/memcheck.h&gt;
+<span class="lineNum">      30 </span>                :            : #endif
+<span class="lineNum">      31 </span>                :            : 
+<span class="lineNum">      32 </span>                :            : #ifdef XAPIAN_HAS_REMOTE_BACKEND
+<span class="lineNum">      33 </span>                :            : 
+<span class="lineNum">      34 </span>                :            : using namespace std;
+<a name="35"><span class="lineNum">      35 </span>                :            : </a>
+<span class="lineNum">      36 </span>                :            : std::string
+<span class="lineNum">      37 </span>                :<span class="lineCov">          3 : BackendManagerRemoteProg::get_dbtype() const</span>
+<span class="lineNum">      38 </span>                :            : {
+<span class="lineNum">      39 </span>                :<span class="lineCov">          3 :     return &quot;remoteprog_&quot; + remote_type;</span>
+<span class="lineNum">      40 </span>                :            : }
+<a name="41"><span class="lineNum">      41 </span>                :            : </a>
+<span class="lineNum">      42 </span>                :            : Xapian::Database
+<span class="lineNum">      43 </span>                :<span class="lineNoCov">          0 : BackendManagerRemoteProg::do_get_database(const vector&lt;string&gt; &amp; files)</span>
+<span class="lineNum">      44 </span>                :            : {
+<span class="lineNum">      45 </span>                :            :     // Default to a long (5 minute) timeout so that tests won't fail just
+<span class="lineNum">      46 </span>                :            :     // because the host is slow or busy.
+<span class="lineNum">      47 </span>                :<span class="lineNoCov">          0 :     return BackendManagerRemoteProg::get_remote_database(files, 300000);</span>
+<span class="lineNum">      48 </span>                :            : }
+<a name="49"><span class="lineNum">      49 </span>                :            : </a>
+<span class="lineNum">      50 </span>                :            : Xapian::WritableDatabase
+<span class="lineNum">      51 </span>                :<span class="lineNoCov">          0 : BackendManagerRemoteProg::get_writable_database(const string &amp; name,</span>
+<span class="lineNum">      52 </span>                :            :                                                 const string &amp; file)
+<span class="lineNum">      53 </span>                :            : {
+<span class="lineNum">      54 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :     string args = get_writable_database_args(name, file);</span>
+<span class="lineNum">      55 </span>                :            : 
+<span class="lineNum">      56 </span>                :            : #ifdef HAVE_VALGRIND
+<span class="lineNum">      57 </span>                :            :     if (RUNNING_ON_VALGRIND) {
+<span class="lineNum">      58 </span>                :            :         args.insert(0, XAPIAN_PROGSRV&quot; &quot;);
+<span class="lineNum">      59 </span>                :            :         return Xapian::Remote::open_writable(&quot;./runsrv&quot;, args);
+<span class="lineNum">      60 </span>                :            :     }
+<span class="lineNum">      61 </span>                :            : #endif
+<span class="lineNum">      62 </span>[<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>][<span class="branchNoExec" title="Branch 5 was not executed"> # </span><span class="branchNoExec" title="Branch 6 was not executed"> # </span>]:<span class="lineNoCov">          0 :     return Xapian::Remote::open_writable(XAPIAN_PROGSRV, args);</span>
+<span class="lineNum">      63 </span>                :            : }
+<a name="64"><span class="lineNum">      64 </span>                :            : </a>
+<span class="lineNum">      65 </span>                :            : Xapian::Database
+<span class="lineNum">      66 </span>                :<span class="lineNoCov">          0 : BackendManagerRemoteProg::get_remote_database(const vector&lt;string&gt; &amp; files,</span>
+<span class="lineNum">      67 </span>                :            :                                               unsigned int timeout)
+<span class="lineNum">      68 </span>                :            : {
+<span class="lineNum">      69 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :     string args = get_remote_database_args(files, timeout);</span>
+<span class="lineNum">      70 </span>                :            : 
+<span class="lineNum">      71 </span>                :            : #ifdef HAVE_VALGRIND
+<span class="lineNum">      72 </span>                :            :     if (RUNNING_ON_VALGRIND) {
+<span class="lineNum">      73 </span>                :            :         args.insert(0, XAPIAN_PROGSRV&quot; &quot;);
+<span class="lineNum">      74 </span>                :            :         return Xapian::Remote::open(&quot;./runsrv&quot;, args);
+<span class="lineNum">      75 </span>                :            :     }
+<span class="lineNum">      76 </span>                :            : #endif
+<span class="lineNum">      77 </span>[<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>][<span class="branchNoExec" title="Branch 5 was not executed"> # </span><span class="branchNoExec" title="Branch 6 was not executed"> # </span>]:<span class="lineNoCov">          0 :     return Xapian::Remote::open(XAPIAN_PROGSRV, args);</span>
+<span class="lineNum">      78 </span>                :            : }
+<a name="79"><span class="lineNum">      79 </span>                :            : </a>
+<span class="lineNum">      80 </span>                :            : Xapian::Database
+<span class="lineNum">      81 </span>                :<span class="lineNoCov">          0 : BackendManagerRemoteProg::get_writable_database_as_database()</span>
+<span class="lineNum">      82 </span>                :            : {
+<span class="lineNum">      83 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :     string args = get_writable_database_as_database_args();</span>
+<span class="lineNum">      84 </span>                :            : 
+<span class="lineNum">      85 </span>                :            : #ifdef HAVE_VALGRIND
+<span class="lineNum">      86 </span>                :            :     if (RUNNING_ON_VALGRIND) {
+<span class="lineNum">      87 </span>                :            :         args.insert(0, XAPIAN_PROGSRV&quot; &quot;);
+<span class="lineNum">      88 </span>                :            :         return Xapian::Remote::open(&quot;./runsrv&quot;, args);
+<span class="lineNum">      89 </span>                :            :     }
+<span class="lineNum">      90 </span>                :            : #endif
+<span class="lineNum">      91 </span>[<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>][<span class="branchNoExec" title="Branch 5 was not executed"> # </span><span class="branchNoExec" title="Branch 6 was not executed"> # </span>]:<span class="lineNoCov">          0 :     return Xapian::Remote::open(XAPIAN_PROGSRV, args);</span>
+<span class="lineNum">      92 </span>                :            : }
+<a name="93"><span class="lineNum">      93 </span>                :            : </a>
+<span class="lineNum">      94 </span>                :            : Xapian::WritableDatabase
+<span class="lineNum">      95 </span>                :<span class="lineNoCov">          0 : BackendManagerRemoteProg::get_writable_database_again()</span>
+<span class="lineNum">      96 </span>                :            : {
+<span class="lineNum">      97 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :     string args = get_writable_database_again_args();</span>
+<span class="lineNum">      98 </span>                :            : 
+<span class="lineNum">      99 </span>                :            : #ifdef HAVE_VALGRIND
+<span class="lineNum">     100 </span>                :            :     if (RUNNING_ON_VALGRIND) {
+<span class="lineNum">     101 </span>                :            :         args.insert(0, XAPIAN_PROGSRV&quot; &quot;);
+<span class="lineNum">     102 </span>                :            :         return Xapian::Remote::open_writable(&quot;./runsrv&quot;, args);
+<span class="lineNum">     103 </span>                :            :     }
+<span class="lineNum">     104 </span>                :            : #endif
+<span class="lineNum">     105 </span>[<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>][<span class="branchNoExec" title="Branch 5 was not executed"> # </span><span class="branchNoExec" title="Branch 6 was not executed"> # </span>]:<span class="lineNoCov">          0 :     return Xapian::Remote::open_writable(XAPIAN_PROGSRV, args);</span>
+<span class="lineNum">     106 </span>                :            : }
+<span class="lineNum">     107 </span>                :            : 
+<span class="lineNum">     108 </span>                :            : #endif // XAPIAN_HAS_REMOTE_BACKEND
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

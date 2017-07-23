@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Test Coverage for xapian-letor 1ea61830e52d - ranker/svmranker.cc</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">ranker</a> - svmranker.cc<span style="font-size: 80%;"> (source / <a href="svmranker.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Test Coverage for xapian-letor 1ea61830e52d</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">104</td>
+            <td class="headerCovTableEntry">118</td>
+            <td class="headerCovTableEntryMed">88.1 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2017-07-23 17:44:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntryMed">87.5 %</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntry">74</td>
+            <td class="headerCovTableEntry">172</td>
+            <td class="headerCovTableEntryLo">43.0 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">           Branch data     Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>                :            : /** @file svmranker.cc</a>
+<span class="lineNum">       2 </span>                :            :  *  @brief Implementation of Ranking-SVM
+<span class="lineNum">       3 </span>                :            :  */
+<span class="lineNum">       4 </span>                :            : /* Copyright (C) 2012 Parth Gupta
+<span class="lineNum">       5 </span>                :            :  * Copyright (C) 2016 Ayush Tomar
+<span class="lineNum">       6 </span>                :            :  *
+<span class="lineNum">       7 </span>                :            :  * This program is free software; you can redistribute it and/or
+<span class="lineNum">       8 </span>                :            :  * modify it under the terms of the GNU General Public License as
+<span class="lineNum">       9 </span>                :            :  * published by the Free Software Foundation; either version 2 of the
+<span class="lineNum">      10 </span>                :            :  * License, or (at your option) any later version.
+<span class="lineNum">      11 </span>                :            :  *
+<span class="lineNum">      12 </span>                :            :  * This program is distributed in the hope that it will be useful,
+<span class="lineNum">      13 </span>                :            :  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+<span class="lineNum">      14 </span>                :            :  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<span class="lineNum">      15 </span>                :            :  * GNU General Public License for more details.
+<span class="lineNum">      16 </span>                :            :  *
+<span class="lineNum">      17 </span>                :            :  * You should have received a copy of the GNU General Public License
+<span class="lineNum">      18 </span>                :            :  * along with this program; if not, write to the Free Software
+<span class="lineNum">      19 </span>                :            :  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
+<span class="lineNum">      20 </span>                :            :  * USA
+<span class="lineNum">      21 </span>                :            :  */
+<span class="lineNum">      22 </span>                :            : 
+<span class="lineNum">      23 </span>                :            : /*
+<span class="lineNum">      24 </span>                :            : Ranking-SVM is adapted from the paper:
+<span class="lineNum">      25 </span>                :            : Joachims, Thorsten. &quot;Optimizing search engines using clickthrough data.&quot;
+<span class="lineNum">      26 </span>                :            : Proceedings of the eighth ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2002.
+<span class="lineNum">      27 </span>                :            : */
+<span class="lineNum">      28 </span>                :            : #include &lt;config.h&gt;
+<span class="lineNum">      29 </span>                :            : 
+<span class="lineNum">      30 </span>                :            : #include &quot;xapian-letor/ranker.h&quot;
+<span class="lineNum">      31 </span>                :            : 
+<span class="lineNum">      32 </span>                :            : #include &quot;debuglog.h&quot;
+<span class="lineNum">      33 </span>                :            : #include &quot;serialise-double.h&quot;
+<span class="lineNum">      34 </span>                :            : 
+<span class="lineNum">      35 </span>                :            : #include &lt;algorithm&gt;
+<span class="lineNum">      36 </span>                :            : #include &lt;cerrno&gt;
+<span class="lineNum">      37 </span>                :            : #include &lt;cstdlib&gt;
+<span class="lineNum">      38 </span>                :            : #include &lt;fstream&gt;
+<span class="lineNum">      39 </span>                :            : #include &lt;sstream&gt;
+<span class="lineNum">      40 </span>                :            : #include &lt;unistd.h&gt;
+<span class="lineNum">      41 </span>                :            : #include &lt;vector&gt;
+<span class="lineNum">      42 </span>                :            : 
+<span class="lineNum">      43 </span>                :            : #include &lt;libsvm/svm.h&gt;
+<span class="lineNum">      44 </span>                :            : 
+<span class="lineNum">      45 </span>                :            : using namespace std;
+<a name="46"><span class="lineNum">      46 </span>                :            : using namespace Xapian;</a>
+<span class="lineNum">      47 </span>                :            : 
+<span class="lineNum">      48 </span>                :<span class="lineCov">          2 : SVMRanker::SVMRanker()</span>
+<span class="lineNum">      49 </span>                :            : {
+<span class="lineNum">      50 </span>                :            :     LOGCALL_CTOR(API, &quot;SVMRanker&quot;, NO_ARGS);
+<a name="51"><span class="lineNum">      51 </span>                :<span class="lineCov">          1 : }</span></a>
+<span class="lineNum">      52 </span>                :            : 
+<span class="lineNum">      53 </span>                :<span class="lineCov">          2 : SVMRanker::~SVMRanker()</span>
+<span class="lineNum">      54 </span>                :            : {
+<span class="lineNum">      55 </span>                :            :     LOGCALL_DTOR(API, &quot;SVMRanker&quot;);
+<span class="lineNum">      56 </span>        [<span class="branchNoCov" title="Branch 2 was not taken"> - </span><span class="branchCov" title="Branch 3 was taken 1 time"> + </span>]:<span class="lineCov">          1 : }</span>
+<a name="57"><span class="lineNum">      57 </span>                :            : </a>
+<span class="lineNum">      58 </span>                :            : static int
+<span class="lineNum">      59 </span>                :<span class="lineCov">         10 : get_non_zero_num(const Xapian::FeatureVector &amp; fv_non_zero)</span>
+<span class="lineNum">      60 </span>                :            : {
+<span class="lineNum">      61 </span>                :<span class="lineCov">         10 :     int non_zero = 0;</span>
+<span class="lineNum">      62 </span>        [<span class="branchCov" title="Branch 1 was taken 190 times"> + </span><span class="branchCov" title="Branch 2 was taken 10 times"> + </span>]:<span class="lineCov">        200 :     for (int i = 0; i &lt; fv_non_zero.get_fcount(); ++i)</span>
+<span class="lineNum">      63 </span>        [<span class="branchCov" title="Branch 1 was taken 166 times"> + </span><span class="branchCov" title="Branch 2 was taken 24 times"> + </span>]:<span class="lineCov">        190 :         if (fv_non_zero.get_feature_value(i) != 0.0)</span>
+<span class="lineNum">      64 </span>                :<span class="lineCov">        166 :             ++non_zero;</span>
+<span class="lineNum">      65 </span>                :<span class="lineCov">         10 :     return non_zero;</span>
+<span class="lineNum">      66 </span>                :            : }
+<a name="67"><span class="lineNum">      67 </span>                :            : </a>
+<span class="lineNum">      68 </span>                :            : void
+<span class="lineNum">      69 </span>                :<span class="lineCov">          2 : SVMRanker::train(const std::vector&lt;Xapian::FeatureVector&gt; &amp; training_data)</span>
+<span class="lineNum">      70 </span>                :            : {
+<span class="lineNum">      71 </span>                :            :     LOGCALL_VOID(API, &quot;SVMRanker::train&quot;, training_data);
+<span class="lineNum">      72 </span>                :            :     struct svm_parameter param;
+<span class="lineNum">      73 </span>                :<span class="lineCov">          2 :     param.svm_type = 4;         //nu-SVR</span>
+<span class="lineNum">      74 </span>                :<span class="lineCov">          2 :     param.kernel_type = 0;      //linear Kernel</span>
+<span class="lineNum">      75 </span>                :<span class="lineCov">          2 :     param.degree = 3;           //parameter for poly Kernel, default 3</span>
+<span class="lineNum">      76 </span>                :<span class="lineCov">          2 :     param.gamma = 0;            //parameter for poly/rbf/sigmoid Kernel, default 1/num_features</span>
+<span class="lineNum">      77 </span>                :<span class="lineCov">          2 :     param.coef0 = 0;            //parameter for poly/sigmoid Kernel, default 0</span>
+<span class="lineNum">      78 </span>                :<span class="lineCov">          2 :     param.nu = 0.5;             //parameter for nu-SVC/one-class SVM/nu-SVR, default 0.5</span>
+<span class="lineNum">      79 </span>                :<span class="lineCov">          2 :     param.cache_size = 100;     //default 40mb</span>
+<span class="lineNum">      80 </span>                :<span class="lineCov">          2 :     param.C = 1;                //penalty parameter, default 1</span>
+<span class="lineNum">      81 </span>                :<span class="lineCov">          2 :     param.eps = 1e-3;           //stopping criteria, default 1e-3</span>
+<span class="lineNum">      82 </span>                :<span class="lineCov">          2 :     param.p = 0.1;              //parameter for e -SVR, default 0.1</span>
+<span class="lineNum">      83 </span>                :<span class="lineCov">          2 :     param.shrinking = 1;        //use the shrinking heuristics</span>
+<span class="lineNum">      84 </span>                :<span class="lineCov">          2 :     param.probability = 0;      //probability estimates</span>
+<span class="lineNum">      85 </span>                :<span class="lineCov">          2 :     param.nr_weight = 0;        //parameter for C-SVCl</span>
+<span class="lineNum">      86 </span>                :<span class="lineCov">          2 :     param.weight_label = NULL;  //parameter flor C-SVC</span>
+<span class="lineNum">      87 </span>                :<span class="lineCov">          2 :     param.weight = NULL;        //parameter for c-SVC</span>
+<span class="lineNum">      88 </span>                :            : 
+<span class="lineNum">      89 </span>                :<span class="lineCov">          2 :     int fvv_len = training_data.size();</span>
+<span class="lineNum">      90 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 2 times"> + </span>]:<span class="lineCov">          2 :     if (fvv_len == 0) {</span>
+<span class="lineNum">      91 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw LetorInternalError(&quot;Training data is empty. Check training file.&quot;);</span>
+<span class="lineNum">      92 </span>                :            :     }
+<span class="lineNum">      93 </span>        [<span class="branchCov" title="Branch 2 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">          2 :     int feature_cnt = training_data[0].get_fcount();</span>
+<span class="lineNum">      94 </span>                :            : 
+<span class="lineNum">      95 </span>                :            :     struct svm_problem prob;
+<span class="lineNum">      96 </span>                :            :     // set the parameters for svm_problem
+<span class="lineNum">      97 </span>                :<span class="lineCov">          2 :     prob.l = fvv_len;</span>
+<span class="lineNum">      98 </span>                :            :     // feature vector
+<span class="lineNum">      99 </span>[<span class="branchCov" title="Branch 0 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">          2 :     prob.x = new svm_node* [prob.l];</span>
+<span class="lineNum">     100 </span>[<span class="branchCov" title="Branch 0 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">          2 :     prob.y = new double [prob.l];</span>
+<span class="lineNum">     101 </span>                :            : 
+<span class="lineNum">     102 </span>                :            :     // Sparse storage; libsvm needs only non-zero features
+<span class="lineNum">     103 </span>        [<span class="branchCov" title="Branch 0 was taken 4 times"> + </span><span class="branchCov" title="Branch 1 was taken 2 times"> + </span>]:<span class="lineCov">          6 :     for (int i = 0; i &lt; fvv_len; ++i) {</span>
+<span class="lineNum">     104 </span>[<span class="branchCov" title="Branch 2 was taken 4 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 4 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">          4 :         prob.x[i] = new svm_node [get_non_zero_num(training_data[i]) + 1]; // one extra for default -1 at the end</span>
+<span class="lineNum">         </span>        [<span class="branchCov" title="Branch 8 was taken 4 times"> + </span><span class="branchNoCov" title="Branch 9 was not taken"> - </span>]
+<span class="lineNum">     105 </span>                :<span class="lineCov">          4 :         int non_zero_flag = 0;</span>
+<span class="lineNum">     106 </span>        [<span class="branchCov" title="Branch 0 was taken 76 times"> + </span><span class="branchCov" title="Branch 1 was taken 4 times"> + </span>]:<span class="lineCov">         80 :         for (int k = 0; k &lt; feature_cnt; ++k) {</span>
+<span class="lineNum">     107 </span>        [<span class="branchCov" title="Branch 2 was taken 76 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">         76 :             double fval = training_data[i].get_feature_value(k);</span>
+<span class="lineNum">     108 </span>        [<span class="branchCov" title="Branch 0 was taken 76 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">         76 :             if (fval != 0.0) {</span>
+<span class="lineNum">     109 </span>                :<span class="lineCov">         76 :                 prob.x[i][non_zero_flag].index = k;</span>
+<span class="lineNum">     110 </span>                :<span class="lineCov">         76 :                 prob.x[i][non_zero_flag].value = fval;</span>
+<span class="lineNum">     111 </span>                :<span class="lineCov">         76 :                 ++non_zero_flag;</span>
+<span class="lineNum">     112 </span>                :            :             }
+<span class="lineNum">     113 </span>                :            :         }
+<span class="lineNum">     114 </span>                :<span class="lineCov">          4 :         prob.x[i][non_zero_flag].index = -1;</span>
+<span class="lineNum">     115 </span>                :<span class="lineCov">          4 :         prob.x[i][non_zero_flag].value = -1;</span>
+<span class="lineNum">     116 </span>                :            : 
+<span class="lineNum">     117 </span>        [<span class="branchCov" title="Branch 2 was taken 4 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">          4 :         prob.y[i] = training_data[i].get_label();</span>
+<span class="lineNum">     118 </span>                :            :     }
+<span class="lineNum">     119 </span>                :            : 
+<span class="lineNum">     120 </span>                :            :     const char * error_msg;
+<span class="lineNum">     121 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          2 :     error_msg = svm_check_parameter(&amp;prob, &amp;param);</span>
+<span class="lineNum">     122 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 2 times"> + </span>]:<span class="lineCov">          2 :     if (error_msg)</span>
+<span class="lineNum">     123 </span>[<span class="branchNoExec" title="Branch 3 was not executed"> # </span><span class="branchNoExec" title="Branch 4 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw LetorInternalError(&quot;svm_check_parameter failed: %s&quot;, error_msg);</span>
+<span class="lineNum">         </span>        [<span class="branchNoExec" title="Branch 10 was not executed"> # </span><span class="branchNoExec" title="Branch 11 was not executed"> # </span>]
+<span class="lineNum">     124 </span>                :            : 
+<span class="lineNum">     125 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          2 :     struct svm_model * trainmodel = svm_train(&amp;prob, &amp;param);</span>
+<span class="lineNum">     126 </span>                :            :     // Generate temporary file to extract model data
+<span class="lineNum">     127 </span>                :<span class="lineCov">          2 :     char templ[] = &quot;/tmp/svmtemp.XXXXXX&quot;;</span>
+<span class="lineNum">     128 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          2 :     int fd = mkstemp(templ);</span>
+<span class="lineNum">     129 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 2 times"> + </span>]:<span class="lineCov">          2 :     if (fd == -1) {</span>
+<span class="lineNum">     130 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw LetorInternalError(&quot;Training failed: &quot;, errno);</span>
+<span class="lineNum">     131 </span>                :            :     }
+<span class="lineNum">     132 </span>                :            :     try {
+<span class="lineNum">     133 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          2 :         svm_save_model(templ, trainmodel);</span>
+<span class="lineNum">     134 </span>                :            :         // Read content of model to string
+<span class="lineNum">     135 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          4 :         std::ifstream f(templ);</span>
+<span class="lineNum">     136 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          4 :         std::ostringstream ss;</span>
+<span class="lineNum">     137 </span>[<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">          2 :         ss &lt;&lt; f.rdbuf();</span>
+<span class="lineNum">     138 </span>                :            :         // Save model string
+<span class="lineNum">     139 </span>[<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">          2 :         this-&gt;model_data = ss.str();</span>
+<span class="lineNum">     140 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          2 :         close(fd);</span>
+<span class="lineNum">     141 </span>                :<span class="lineCov">          2 :         std::remove(templ);</span>
+<span class="lineNum">     142 </span>        [<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>]:<span class="lineNoCov">          0 :     } catch (...) {</span>
+<span class="lineNum">     143 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :         close(fd);</span>
+<span class="lineNum">     144 </span>                :<span class="lineNoCov">          0 :         std::remove(templ);</span>
+<span class="lineNum">     145 </span>                :            :     }
+<span class="lineNum">     146 </span>        [<span class="branchNoCov" title="Branch 1 was not taken"> - </span><span class="branchCov" title="Branch 2 was taken 2 times"> + </span>]:<span class="lineCov">          2 :     if (this-&gt;model_data.empty()) {</span>
+<span class="lineNum">     147 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw LetorInternalError(&quot;SVM model empty. Training failed.&quot;);</span>
+<span class="lineNum">     148 </span>                :            :     }
+<span class="lineNum">     149 </span>                :<span class="lineCov">          2 : }</span>
+<a name="150"><span class="lineNum">     150 </span>                :            : </a>
+<span class="lineNum">     151 </span>                :            : void
+<span class="lineNum">     152 </span>                :<span class="lineCov">          2 : SVMRanker::save_model_to_metadata(const string &amp; model_key)</span>
+<span class="lineNum">     153 </span>                :            : {
+<span class="lineNum">     154 </span>                :            :     LOGCALL_VOID(API, &quot;SVMRanker::save_model_to_metadata&quot;, model_key);
+<span class="lineNum">     155 </span>[<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">          4 :     Xapian::WritableDatabase letor_db(get_database_path());</span>
+<span class="lineNum">     156 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          4 :     string key = model_key;</span>
+<span class="lineNum">     157 </span>        [<span class="branchCov" title="Branch 1 was taken 1 time"> + </span><span class="branchCov" title="Branch 2 was taken 1 time"> + </span>]:<span class="lineCov">          2 :     if (key.empty()) {</span>
+<span class="lineNum">     158 </span>        [<span class="branchCov" title="Branch 1 was taken 1 time"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          1 :         key = &quot;SVMRanker.model.default&quot;;</span>
+<span class="lineNum">     159 </span>                :            :     }
+<span class="lineNum">     160 </span>        [<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          2 :     letor_db.set_metadata(key, this-&gt;model_data);</span>
+<span class="lineNum">     161 </span>                :<span class="lineCov">          2 : }</span>
+<a name="162"><span class="lineNum">     162 </span>                :            : </a>
+<span class="lineNum">     163 </span>                :            : void
+<span class="lineNum">     164 </span>                :<span class="lineCov">          6 : SVMRanker::load_model_from_metadata(const string &amp; model_key)</span>
+<span class="lineNum">     165 </span>                :            : {
+<span class="lineNum">     166 </span>                :            :     LOGCALL_VOID(API, &quot;SVMRanker::load_model_from_metadata&quot;, model_key);
+<span class="lineNum">     167 </span>[<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">         12 :     Xapian::Database letor_db(get_database_path());</span>
+<span class="lineNum">     168 </span>        [<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         12 :     string key = model_key;</span>
+<span class="lineNum">     169 </span>        [<span class="branchCov" title="Branch 1 was taken 1 time"> + </span><span class="branchCov" title="Branch 2 was taken 5 times"> + </span>]:<span class="lineCov">          6 :     if (key.empty()) {</span>
+<span class="lineNum">     170 </span>        [<span class="branchCov" title="Branch 1 was taken 1 time"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          1 :         key = &quot;SVMRanker.model.default&quot;;</span>
+<span class="lineNum">     171 </span>                :            :     }
+<span class="lineNum">     172 </span>        [<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">         12 :     string model_data_load = letor_db.get_metadata(key);</span>
+<span class="lineNum">     173 </span>                :            :     // Throw exception if no model data associated with key
+<span class="lineNum">     174 </span>        [<span class="branchNoCov" title="Branch 1 was not taken"> - </span><span class="branchCov" title="Branch 2 was taken 6 times"> + </span>]:<span class="lineCov">          6 :     if (model_data_load.empty()) {</span>
+<span class="lineNum">     175 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw Xapian::LetorInternalError(&quot;No model found. Check key.&quot;);</span>
+<span class="lineNum">     176 </span>                :            :     }
+<span class="lineNum">     177 </span>        [<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          6 :     this-&gt;model_data = model_data_load;</span>
+<span class="lineNum">     178 </span>                :<span class="lineCov">          6 : }</span>
+<a name="179"><span class="lineNum">     179 </span>                :            : </a>
+<span class="lineNum">     180 </span>                :            : std::vector&lt;FeatureVector&gt;
+<span class="lineNum">     181 </span>                :<span class="lineCov">          3 : SVMRanker::rank_fvv(const std::vector&lt;FeatureVector&gt; &amp; fvv) const</span>
+<span class="lineNum">     182 </span>                :            : {
+<span class="lineNum">     183 </span>                :            :     LOGCALL(API, std::vector&lt;FeatureVector&gt;, &quot;SVMRanker::rank_fvv&quot;, fvv);
+<span class="lineNum">     184 </span>        [<span class="branchNoCov" title="Branch 1 was not taken"> - </span><span class="branchCov" title="Branch 2 was taken 3 times"> + </span>]:<span class="lineCov">          3 :     if (this-&gt;model_data.empty()) {</span>
+<span class="lineNum">     185 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw LetorInternalError(&quot;SVM model empty. Load correct model.&quot;);</span>
+<span class="lineNum">     186 </span>                :            :     }
+<span class="lineNum">     187 </span>                :            :     // Generate temporary file containing model data for svm_load_model() method
+<span class="lineNum">     188 </span>                :<span class="lineCov">          3 :     struct svm_model * model = NULL;</span>
+<span class="lineNum">     189 </span>                :<span class="lineCov">          3 :     char templ[] = &quot;/tmp/svmtemp.XXXXXX&quot;;</span>
+<span class="lineNum">     190 </span>        [<span class="branchCov" title="Branch 1 was taken 3 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          3 :     int fd = mkstemp(templ);</span>
+<span class="lineNum">     191 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 3 times"> + </span>]:<span class="lineCov">          3 :     if (fd == -1) {</span>
+<span class="lineNum">     192 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw LetorInternalError(&quot;Ranking failed: &quot;, errno);</span>
+<span class="lineNum">     193 </span>                :            :     }
+<span class="lineNum">     194 </span>                :            :     try {
+<span class="lineNum">     195 </span>        [<span class="branchCov" title="Branch 2 was taken 3 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">          6 :         std::ofstream f(templ);</span>
+<span class="lineNum">     196 </span>        [<span class="branchCov" title="Branch 2 was taken 3 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">          3 :         f &lt;&lt; this-&gt;model_data.c_str();</span>
+<span class="lineNum">     197 </span>        [<span class="branchCov" title="Branch 1 was taken 3 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          3 :         f.close();</span>
+<span class="lineNum">     198 </span>        [<span class="branchCov" title="Branch 1 was taken 3 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          3 :         model = svm_load_model(templ);</span>
+<span class="lineNum">     199 </span>        [<span class="branchCov" title="Branch 1 was taken 3 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          3 :         close(fd);</span>
+<span class="lineNum">     200 </span>                :<span class="lineCov">          3 :         std::remove(templ);</span>
+<span class="lineNum">     201 </span>        [<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>]:<span class="lineNoCov">          0 :     } catch (...) {</span>
+<span class="lineNum">     202 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :         close(fd);</span>
+<span class="lineNum">     203 </span>                :<span class="lineNoCov">          0 :         std::remove(templ);</span>
+<span class="lineNum">     204 </span>                :            :     }
+<span class="lineNum">     205 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 3 times"> + </span>]:<span class="lineCov">          3 :     if (!model) {</span>
+<span class="lineNum">     206 </span>[<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>][<span class="branchNoExec" title="Branch 7 was not executed"> # </span><span class="branchNoExec" title="Branch 8 was not executed"> # </span>]:<span class="lineNoCov">          0 :         throw LetorInternalError(&quot;Ranking failed. SVM model not usable.&quot;);</span>
+<span class="lineNum">     207 </span>                :            :     }
+<span class="lineNum">     208 </span>                :            : 
+<span class="lineNum">     209 </span>        [<span class="branchCov" title="Branch 1 was taken 3 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">          3 :     std::vector&lt;FeatureVector&gt; testfvv = fvv;</span>
+<span class="lineNum">     210 </span>                :            : 
+<span class="lineNum">     211 </span>                :<span class="lineCov">          3 :     struct svm_node * test = NULL;</span>
+<span class="lineNum">     212 </span>        [<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchCov" title="Branch 2 was taken 3 times"> + </span>]:<span class="lineCov">          9 :     for (size_t i = 0; i &lt; testfvv.size(); ++i) {</span>
+<span class="lineNum">     213 </span>[<span class="branchCov" title="Branch 2 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">          6 :         test = new svm_node [get_non_zero_num(testfvv[i]) + 1];</span>
+<span class="lineNum">         </span>        [<span class="branchCov" title="Branch 8 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 9 was not taken"> - </span>]
+<span class="lineNum">     214 </span>        [<span class="branchCov" title="Branch 2 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">          6 :         int feature_cnt = testfvv[i].get_fcount();</span>
+<span class="lineNum">     215 </span>                :<span class="lineCov">          6 :         int non_zero_flag = 0;</span>
+<span class="lineNum">     216 </span>        [<span class="branchCov" title="Branch 0 was taken 114 times"> + </span><span class="branchCov" title="Branch 1 was taken 6 times"> + </span>]:<span class="lineCov">        120 :         for (int k = 0; k &lt; feature_cnt; ++k) {</span>
+<span class="lineNum">     217 </span>        [<span class="branchCov" title="Branch 2 was taken 114 times"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">        114 :             double fval = testfvv[i].get_feature_value(k);</span>
+<span class="lineNum">     218 </span>        [<span class="branchCov" title="Branch 0 was taken 90 times"> + </span><span class="branchCov" title="Branch 1 was taken 24 times"> + </span>]:<span class="lineCov">        114 :             if (fval != 0.0) {</span>
+<span class="lineNum">     219 </span>                :<span class="lineCov">         90 :                 test[non_zero_flag].index = k;</span>
+<span class="lineNum">     220 </span>                :<span class="lineCov">         90 :                 test[non_zero_flag].value = fval;</span>
+<span class="lineNum">     221 </span>                :<span class="lineCov">         90 :                 ++non_zero_flag;</span>
+<span class="lineNum">     222 </span>                :            :             }
+<span class="lineNum">     223 </span>                :            :         }
+<span class="lineNum">     224 </span>                :<span class="lineCov">          6 :         test[non_zero_flag].index = -1;</span>
+<span class="lineNum">     225 </span>                :<span class="lineCov">          6 :         test[non_zero_flag].value = -1;</span>
+<span class="lineNum">     226 </span>[<span class="branchCov" title="Branch 1 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 5 was taken 6 times"> + </span><span class="branchNoCov" title="Branch 6 was not taken"> - </span>]:<span class="lineCov">          6 :         testfvv[i].set_score(svm_predict(model, test));</span>
+<span class="lineNum">     227 </span>                :            :     }
+<span class="lineNum">     228 </span>                :<span class="lineCov">          3 :     return testfvv;</span>
+<span class="lineNum">     229 </span>                :            : }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

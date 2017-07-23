@@ -1,0 +1,444 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Test Coverage for xapian-letor 1ea61830e52d - include/xapian-letor/ranker.h</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">include/xapian-letor</a> - ranker.h<span style="font-size: 80%;"> (source / <a href="ranker.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Test Coverage for xapian-letor 1ea61830e52d</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2017-07-23 17:44:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntryHi">-</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">           Branch data     Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>                :            : /** @file ranker.h</a>
+<span class="lineNum">       2 </span>                :            :  * @brief Ranker class - weighting scheme based on Learning to Rank
+<span class="lineNum">       3 </span>                :            :  */
+<span class="lineNum">       4 </span>                :            : /* Copyright (C) 2012 Parth Gupta
+<span class="lineNum">       5 </span>                :            :  * Copyright (C) 2016 Ayush Tomar
+<span class="lineNum">       6 </span>                :            :  *
+<span class="lineNum">       7 </span>                :            :  * This program is free software; you can redistribute it and/or
+<span class="lineNum">       8 </span>                :            :  * modify it under the terms of the GNU General Public License as
+<span class="lineNum">       9 </span>                :            :  * published by the Free Software Foundation; either version 2 of the
+<span class="lineNum">      10 </span>                :            :  * License, or (at your option) any later version.
+<span class="lineNum">      11 </span>                :            :  *
+<span class="lineNum">      12 </span>                :            :  * This program is distributed in the hope that it will be useful,
+<span class="lineNum">      13 </span>                :            :  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+<span class="lineNum">      14 </span>                :            :  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<span class="lineNum">      15 </span>                :            :  * GNU General Public License for more details.
+<span class="lineNum">      16 </span>                :            :  *
+<span class="lineNum">      17 </span>                :            :  * You should have received a copy of the GNU General Public License
+<span class="lineNum">      18 </span>                :            :  * along with this program; if not, write to the Free Software
+<span class="lineNum">      19 </span>                :            :  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
+<span class="lineNum">      20 </span>                :            :  * USA
+<span class="lineNum">      21 </span>                :            :  */
+<span class="lineNum">      22 </span>                :            : 
+<span class="lineNum">      23 </span>                :            : #ifndef RANKER_H
+<span class="lineNum">      24 </span>                :            : #define RANKER_H
+<span class="lineNum">      25 </span>                :            : 
+<span class="lineNum">      26 </span>                :            : #include &lt;xapian.h&gt;
+<span class="lineNum">      27 </span>                :            : #include &lt;xapian/intrusive_ptr.h&gt;
+<span class="lineNum">      28 </span>                :            : #include &lt;xapian/types.h&gt;
+<span class="lineNum">      29 </span>                :            : #include &lt;xapian/visibility.h&gt;
+<span class="lineNum">      30 </span>                :            : 
+<span class="lineNum">      31 </span>                :            : #include &quot;featurelist.h&quot;
+<span class="lineNum">      32 </span>                :            : #include &quot;featurevector.h&quot;
+<span class="lineNum">      33 </span>                :            : #include &quot;letor_error.h&quot;
+<span class="lineNum">      34 </span>                :            : 
+<span class="lineNum">      35 </span>                :            : #include &lt;string&gt;
+<span class="lineNum">      36 </span>                :            : #include &lt;vector&gt;
+<span class="lineNum">      37 </span>                :            : 
+<span class="lineNum">      38 </span>                :            : namespace Xapian {
+<span class="lineNum">      39 </span>                :            : 
+<span class="lineNum">      40 </span>                :            :     /** Utility function that prepares the training data.
+<span class="lineNum">      41 </span>                :            :      *
+<span class="lineNum">      42 </span>                :            :      *  The training data file is used to train a model which in turn will be used to
+<span class="lineNum">      43 </span>                :            :      *  assign scores to the documents based of Learning-to-Rank model.
+<span class="lineNum">      44 </span>                :            :      *
+<span class="lineNum">      45 </span>                :            :      *  The file is created in the standard format of Letor training file
+<span class="lineNum">      46 </span>                :            :      *  as below:
+<span class="lineNum">      47 </span>                :            :      *
+<span class="lineNum">      48 </span>                :            :      *  0 qid:102 1:0.130742 2:0.000000 3:0.333333 4:0.000000 ... 18:0.750000
+<span class="lineNum">      49 </span>                :            :      *            19:1.000000 #docid = 13566007
+<span class="lineNum">      50 </span>                :            :      *  1 qid:102 1:0.593640 2:1.000000 3:0.000000 4:0.000000 ... 18:0.500000
+<span class="lineNum">      51 </span>                :            :      *            19:0.000000 #docid = 0740276
+<span class="lineNum">      52 </span>                :            :      *
+<span class="lineNum">      53 </span>                :            :      *  where first column is relevance judgement of the document with docid as
+<span class="lineNum">      54 </span>                :            :      *  shown in the last column. The second column is query id and in between
+<span class="lineNum">      55 </span>                :            :      *  there are 19 feature values.
+<span class="lineNum">      56 </span>                :            :      *
+<span class="lineNum">      57 </span>                :            :      *  @param  db_path Path to Xapian::Database to be used.
+<span class="lineNum">      58 </span>                :            :      *  @param  query_file      Here you have to give a path to the file
+<span class="lineNum">      59 </span>                :            :      *                          (in free text form) containing training queries
+<span class="lineNum">      60 </span>                :            :      *                          in specified format.
+<span class="lineNum">      61 </span>                :            :      *  @param  qrel_file       Here supply the path to the qrel file
+<span class="lineNum">      62 </span>                :            :      *                          (in free text form) containing the relevance
+<span class="lineNum">      63 </span>                :            :      *                          judgements for the queries in the training
+<span class="lineNum">      64 </span>                :            :      *                          file. This file should be in standard format
+<span class="lineNum">      65 </span>                :            :      *                          specified.
+<span class="lineNum">      66 </span>                :            :      *  @param  msetsize        This is the mset size used for the first
+<span class="lineNum">      67 </span>                :            :      *                          retrieval for training queries.
+<span class="lineNum">      68 </span>                :            :      *                          It should be selected depending on the qrel
+<span class="lineNum">      69 </span>                :            :      *                          file and database size.
+<span class="lineNum">      70 </span>                :            :      *  @param  filename        Filename path where the training file has to
+<span class="lineNum">      71 </span>                :            :      *                          be stored. Default is &quot;./training-data.txt&quot;.
+<span class="lineNum">      72 </span>                :            :      *  @param  flist           Xapian::FeatureList object defining what set
+<span class="lineNum">      73 </span>                :            :      *                          of features to use for preparing the training
+<span class="lineNum">      74 </span>                :            :      *                          file. It is initialised by DEFAULT set of
+<span class="lineNum">      75 </span>                :            :      *                          Features by default. To use a custom set of
+<span class="lineNum">      76 </span>                :            :      *                          features, pass a customised Xapian::FeatureList
+<span class="lineNum">      77 </span>                :            :      *                          object.
+<span class="lineNum">      78 </span>                :            :      *
+<span class="lineNum">      79 </span>                :            :      *  @exception FileNotFoundError will be thrown if file not found at
+<span class="lineNum">      80 </span>                :            :      *             supplied path
+<span class="lineNum">      81 </span>                :            :      *  @exception LetorParseError will be thrown if query file or qrel file
+<span class="lineNum">      82 </span>                :            :      *             could not be parsed
+<span class="lineNum">      83 </span>                :            :      */
+<span class="lineNum">      84 </span>                :            :     XAPIAN_VISIBILITY_DEFAULT
+<span class="lineNum">      85 </span>                :            :     void
+<span class="lineNum">      86 </span>                :            :     prepare_training_file(const std::string &amp; db_path,
+<span class="lineNum">      87 </span>                :            :                           const std::string &amp; query_file,
+<span class="lineNum">      88 </span>                :            :                           const std::string &amp; qrel_file,
+<span class="lineNum">      89 </span>                :            :                           Xapian::doccount msetsize,
+<span class="lineNum">      90 </span>                :            :                           const std::string &amp; filename = &quot;training-data.txt&quot;,
+<span class="lineNum">      91 </span>                :            :                           const Xapian::FeatureList &amp; flist = FeatureList());
+<span class="lineNum">      92 </span>                :            : 
+<span class="lineNum">      93 </span>                :            : class XAPIAN_VISIBILITY_DEFAULT Ranker : public Xapian::Internal::intrusive_base {
+<span class="lineNum">      94 </span>                :            :     /// Path to Xapian::Database instance to be used.
+<span class="lineNum">      95 </span>                :            :     std::string db_path;
+<span class="lineNum">      96 </span>                :            :     /// Xapian::Query to be ranked using Ranking model.
+<span class="lineNum">      97 </span>                :            :     Xapian::Query letor_query;
+<span class="lineNum">      98 </span>                :            : 
+<span class="lineNum">      99 </span>                :            :   public:
+<span class="lineNum">     100 </span>                :            :     /// Default constructor
+<span class="lineNum">     101 </span>                :            :     Ranker();
+<span class="lineNum">     102 </span>                :            : 
+<span class="lineNum">     103 </span>                :            :     /// Virtual destructor since we have virtual methods.
+<span class="lineNum">     104 </span>                :            :     virtual ~Ranker();
+<span class="lineNum">     105 </span>                :            : 
+<span class="lineNum">     106 </span>                :            :     /** Specify path to Xapian::Database to be used for Ranker methods.
+<span class="lineNum">     107 </span>                :            :      *
+<span class="lineNum">     108 </span>                :            :      *  @param  dbpath      Path to Xapian::Database to be used.
+<span class="lineNum">     109 </span>                :            :      */
+<span class="lineNum">     110 </span>                :            :     void set_database_path(const std::string &amp; dbpath);
+<span class="lineNum">     111 </span>                :            : 
+<span class="lineNum">     112 </span>                :            :     /** Get path to Xapian::Database that has been set for ranking.
+<span class="lineNum">     113 </span>                :            :      *
+<span class="lineNum">     114 </span>                :            :      *  @return   Path to Xapian::Database that has been set for ranking.
+<span class="lineNum">     115 </span>                :            :      */
+<span class="lineNum">     116 </span>                :            :     std::string get_database_path();
+<span class="lineNum">     117 </span>                :            : 
+<span class="lineNum">     118 </span>                :            :     /** Specify Xapian::Query that is to be used for ranking.
+<span class="lineNum">     119 </span>                :            :      *
+<span class="lineNum">     120 </span>                :            :      *  @param  query      Xapian::Query to be ranked using ranking model.
+<span class="lineNum">     121 </span>                :            :      */
+<span class="lineNum">     122 </span>                :            :     void set_query(const Xapian::Query &amp; query);
+<span class="lineNum">     123 </span>                :            : 
+<span class="lineNum">     124 </span>                :            :     /** Learns the model using the training file.
+<span class="lineNum">     125 </span>                :            :      *
+<span class="lineNum">     126 </span>                :            :      *  Model file is saved as DB metadata.
+<span class="lineNum">     127 </span>                :            :      *
+<span class="lineNum">     128 </span>                :            :      *  @param  input_filename   Path to training file.
+<span class="lineNum">     129 </span>                :            :      *                           Default is &quot;./training-data.txt&quot;.
+<span class="lineNum">     130 </span>                :            :      *  @param  model_key        Metadata key using which the model is to be
+<span class="lineNum">     131 </span>                :            :      *                           loaded. If no model_key is supplied, ranker
+<span class="lineNum">     132 </span>                :            :      *                           subclass uses its default key
+<span class="lineNum">     133 </span>                :            :      *                           e.g. ListNET_default_key.
+<span class="lineNum">     134 </span>                :            :      *
+<span class="lineNum">     135 </span>                :            :      *  @exception FileNotFoundError will be thrown if file not found at
+<span class="lineNum">     136 </span>                :            :      *             supplied path
+<span class="lineNum">     137 </span>                :            :      */
+<span class="lineNum">     138 </span>                :            :     void train_model(const std::string &amp; input_filename = &quot;training-data.txt&quot;,
+<span class="lineNum">     139 </span>                :            :                      const std::string &amp; model_key = std::string());
+<span class="lineNum">     140 </span>                :            : 
+<span class="lineNum">     141 </span>                :            :     /** Ranking function.
+<span class="lineNum">     142 </span>                :            :      *
+<span class="lineNum">     143 </span>                :            :      *  Re-ranks the initial mset using trained model.
+<span class="lineNum">     144 </span>                :            :      *
+<span class="lineNum">     145 </span>                :            :      *  @param  mset       Xapian::MSet corresponding to Xapian::Query that
+<span class="lineNum">     146 </span>                :            :      *                     is to be re-ranked.
+<span class="lineNum">     147 </span>                :            :      *  @param  model_key  DB metadata key from which the ranking model is to
+<span class="lineNum">     148 </span>                :            :      *                     be loaded. If no model_key is provided,
+<span class="lineNum">     149 </span>                :            :      *                     ranker subclass uses its default model_key
+<span class="lineNum">     150 </span>                :            :      *                     e.g. ListNET_default_key.
+<span class="lineNum">     151 </span>                :            :      *  @param flist       Xapian::FeatureList object defining what set of
+<span class="lineNum">     152 </span>                :            :      *                     features to use for ranking. It is initialised by
+<span class="lineNum">     153 </span>                :            :      *                     DEFAULT set of Features by default.
+<span class="lineNum">     154 </span>                :            :      *                     Note: Make sure that this FeatureList object is the
+<span class="lineNum">     155 </span>                :            :      *                     same as what was used during preparation of the
+<span class="lineNum">     156 </span>                :            :      *                     training file.
+<span class="lineNum">     157 </span>                :            :      */
+<span class="lineNum">     158 </span>                :            :     void rank(Xapian::MSet &amp; mset,
+<span class="lineNum">     159 </span>                :            :               const std::string &amp; model_key = std::string(),
+<span class="lineNum">     160 </span>                :            :               const Xapian::FeatureList &amp; flist = Xapian::FeatureList());
+<span class="lineNum">     161 </span>                :            : 
+<span class="lineNum">     162 </span>                :            :     /** Method to score the ranking.
+<span class="lineNum">     163 </span>                :            :      *
+<span class="lineNum">     164 </span>                :            :      *  @param query_file    Query file containing test queries in letor
+<span class="lineNum">     165 </span>                :            :      *                       specified format.
+<span class="lineNum">     166 </span>                :            :      *  @param qrel_file     Qrel file containing relevance judgements for the
+<span class="lineNum">     167 </span>                :            :      *                       queries in letor specified format.
+<span class="lineNum">     168 </span>                :            :      *  @param model_key     Model to check for ranking quality.
+<span class="lineNum">     169 </span>                :            :      *  @param output_file   Output file noting scoring results.
+<span class="lineNum">     170 </span>                :            :      *  @param msetsize      MSet size of retrieved documents.
+<span class="lineNum">     171 </span>                :            :      *  @param scorer_type   Scorer algorithm to use. By default, NDCGScore is
+<span class="lineNum">     172 </span>                :            :      *                       used.
+<span class="lineNum">     173 </span>                :            :      *                       Available algorithms:
+<span class="lineNum">     174 </span>                :            :      *                       1. NDCGScore
+<span class="lineNum">     175 </span>                :            :      *  @param flist         Xapian::FeatureList object defining what set of
+<span class="lineNum">     176 </span>                :            :      *                       features to use.
+<span class="lineNum">     177 </span>                :            :      *                       Note: Make sure that it is same as what was used
+<span class="lineNum">     178 </span>                :            :      *                       while training the model being used.
+<span class="lineNum">     179 </span>                :            :      *
+<span class="lineNum">     180 </span>                :            :      *  @exception FileNotFoundError will be thrown if file not found at
+<span class="lineNum">     181 </span>                :            :      *             supplied path
+<span class="lineNum">     182 </span>                :            :      *  @exception LetorParseError will be thrown if query file or qrel file
+<span class="lineNum">     183 </span>                :            :      *             could not be parsed
+<span class="lineNum">     184 </span>                :            :      */
+<span class="lineNum">     185 </span>                :            :     void score(const std::string &amp; query_file,
+<span class="lineNum">     186 </span>                :            :                const std::string &amp; qrel_file,
+<span class="lineNum">     187 </span>                :            :                const std::string &amp; model_key,
+<span class="lineNum">     188 </span>                :            :                const std::string &amp; output_file,
+<span class="lineNum">     189 </span>                :            :                Xapian::doccount msetsize,
+<span class="lineNum">     190 </span>                :            :                const std::string &amp; scorer_type = &quot;NDCGScore&quot;,
+<span class="lineNum">     191 </span>                :            :                const Xapian::FeatureList &amp; flist = Xapian::FeatureList());
+<span class="lineNum">     192 </span>                :            : 
+<span class="lineNum">     193 </span>                :            :   protected:
+<span class="lineNum">     194 </span>                :            :     /// Method to train the model. Overridden in ranker subclass.
+<span class="lineNum">     195 </span>                :            :     virtual void
+<span class="lineNum">     196 </span>                :            :     train(const std::vector&lt;Xapian::FeatureVector&gt; &amp; training_data) = 0;
+<span class="lineNum">     197 </span>                :            : 
+<span class="lineNum">     198 </span>                :            :     /** Method to save model as db metadata. Overridden in ranker subclass.
+<span class="lineNum">     199 </span>                :            :      *
+<span class="lineNum">     200 </span>                :            :      *  Note: Make sure that there is no active writer on the database.
+<span class="lineNum">     201 </span>                :            :      *        Since this method writes to database, it may cause database
+<span class="lineNum">     202 </span>                :            :      *        exceptions.
+<span class="lineNum">     203 </span>                :            :      *
+<span class="lineNum">     204 </span>                :            :      *  @param model_key     Key by which model is to be stored.
+<span class="lineNum">     205 </span>                :            :      *                       If empty, default key is used by the respective
+<span class="lineNum">     206 </span>                :            :      *                       subclass.
+<span class="lineNum">     207 </span>                :            :      */
+<span class="lineNum">     208 </span>                :            :     virtual void save_model_to_metadata(const std::string &amp; model_key) = 0;
+<span class="lineNum">     209 </span>                :            : 
+<span class="lineNum">     210 </span>                :            :     /** Method to load model from db metadata. Overridden in ranker subclass.
+<span class="lineNum">     211 </span>                :            :      *
+<span class="lineNum">     212 </span>                :            :      *  @param model_key     Key by which model is to be loaded.
+<span class="lineNum">     213 </span>                :            :      *                       If empty, default key is used by the respective
+<span class="lineNum">     214 </span>                :            :      *                       subclass.
+<span class="lineNum">     215 </span>                :            :      */
+<span class="lineNum">     216 </span>                :            :     virtual void load_model_from_metadata(const std::string &amp; model_key) = 0;
+<span class="lineNum">     217 </span>                :            : 
+<span class="lineNum">     218 </span>                :            :     /** Method to re-rank a list of FeatureVectors
+<span class="lineNum">     219 </span>                :            :      *  (each representing a Xapian::Document) by using the model.
+<span class="lineNum">     220 </span>                :            :      *
+<span class="lineNum">     221 </span>                :            :      *  Overridden in ranker subclass.
+<span class="lineNum">     222 </span>                :            :      */
+<span class="lineNum">     223 </span>                :            :     virtual std::vector&lt;Xapian::FeatureVector&gt;
+<span class="lineNum">     224 </span>                :            :     rank_fvv(const std::vector&lt;Xapian::FeatureVector&gt; &amp; fvv) const = 0;
+<span class="lineNum">     225 </span>                :            : 
+<span class="lineNum">     226 </span>                :            :     /** Compare function used to sort std::vector&lt;Xapian::FeatureVector&gt;
+<span class="lineNum">     227 </span>                :            :      *  by score values.
+<span class="lineNum">     228 </span>                :            :      */
+<span class="lineNum">     229 </span>                :            :     static bool scorecomparer(const FeatureVector &amp; firstfv,
+<span class="lineNum">     230 </span>                :            :                               const FeatureVector &amp; secondfv);
+<span class="lineNum">     231 </span>                :            : 
+<span class="lineNum">     232 </span>                :            :     /** Compare function used to sort std::vector&lt;Xapian::FeatureVector&gt;
+<span class="lineNum">     233 </span>                :            :      *  by label values.
+<span class="lineNum">     234 </span>                :            :      */
+<span class="lineNum">     235 </span>                :            :     static bool labelcomparer(const FeatureVector &amp; firstfv,
+<span class="lineNum">     236 </span>                :            :                               const FeatureVector &amp; secondfv);
+<span class="lineNum">     237 </span>                :            : 
+<span class="lineNum">     238 </span>                :            :   private:
+<span class="lineNum">     239 </span>                :            :     /// Don't allow assignment.
+<span class="lineNum">     240 </span>                :            :     void operator=(const Ranker &amp;);
+<span class="lineNum">     241 </span>                :            : 
+<span class="lineNum">     242 </span>                :            :     /// Don't allow copying.
+<span class="lineNum">     243 </span>                :            :     Ranker(const Ranker &amp; o);
+<span class="lineNum">     244 </span>                :            : 
+<span class="lineNum">     245 </span>                :            : };
+<span class="lineNum">     246 </span>                :            : 
+<span class="lineNum">     247 </span>                :            : /// ListNet Ranker class
+<span class="lineNum">     248 </span>                :            : class XAPIAN_VISIBILITY_DEFAULT ListNETRanker: public Ranker {
+<span class="lineNum">     249 </span>                :            :     /// Ranker parameters
+<span class="lineNum">     250 </span>                :            :     std::vector&lt;double&gt; parameters;
+<span class="lineNum">     251 </span>                :            :     /// Learning rate (Default is 0.0001)
+<span class="lineNum">     252 </span>                :            :     double learning_rate;
+<span class="lineNum">     253 </span>                :            :     /// Number of iterations (Default is 15)
+<span class="lineNum">     254 </span>                :            :     int iterations;
+<span class="lineNum">     255 </span>                :            : 
+<span class="lineNum">     256 </span>                :            :     /** Method to train the model.
+<span class="lineNum">     257 </span>                :            :      *
+<span class="lineNum">     258 </span>                :            :      * @exception LetorInternalError will be thrown if training data is null.
+<span class="lineNum">     259 </span>                :            :      */
+<span class="lineNum">     260 </span>                :            :     void train(const std::vector&lt;Xapian::FeatureVector&gt; &amp; training_data);
+<span class="lineNum">     261 </span>                :            : 
+<span class="lineNum">     262 </span>                :            :     /** Method to save ListNET model as db metadata.
+<span class="lineNum">     263 </span>                :            :      *
+<span class="lineNum">     264 </span>                :            :      *  ListNET model file gets stored with each parameter value in a new line.
+<span class="lineNum">     265 </span>                :            :      *   e.g.
+<span class="lineNum">     266 </span>                :            :      *
+<span class="lineNum">     267 </span>                :            :      *  0.000920817564536697
+<span class="lineNum">     268 </span>                :            :      *  0.000920817564536697
+<span class="lineNum">     269 </span>                :            :      *  0
+<span class="lineNum">     270 </span>                :            :      *  -1.66533453693773e-19
+<span class="lineNum">     271 </span>                :            :      *
+<span class="lineNum">     272 </span>                :            :      *  @param model_key        Metadata key using which model is to be stored.
+<span class="lineNum">     273 </span>                :            :      */
+<span class="lineNum">     274 </span>                :            :     void save_model_to_metadata(const std::string &amp; model_key);
+<span class="lineNum">     275 </span>                :            : 
+<span class="lineNum">     276 </span>                :            :     /** Method to load model from an external file.
+<span class="lineNum">     277 </span>                :            :      *
+<span class="lineNum">     278 </span>                :            :      *  @param model_key         Metadata key using which model is to be
+<span class="lineNum">     279 </span>                :            :      *                           loaded.
+<span class="lineNum">     280 </span>                :            :      *
+<span class="lineNum">     281 </span>                :            :      *  @exception LetorInternalError will be thrown if no model exists
+<span class="lineNum">     282 </span>                :            :      *             corresponding to the supplied key
+<span class="lineNum">     283 </span>                :            :      */
+<span class="lineNum">     284 </span>                :            :     void load_model_from_metadata(const std::string &amp; model_key);
+<span class="lineNum">     285 </span>                :            : 
+<span class="lineNum">     286 </span>                :            :     /** Method to re-rank a std::vector&lt;Xapian::FeatureVector&gt; by using the
+<span class="lineNum">     287 </span>                :            :      *  model.
+<span class="lineNum">     288 </span>                :            :      *
+<span class="lineNum">     289 </span>                :            :      *  @param fvv      vector&lt;FeatureVector&gt; that will be re-ranked.
+<span class="lineNum">     290 </span>                :            :      *
+<span class="lineNum">     291 </span>                :            :      *  @exception      LetorInternalError will be thrown if model file
+<span class="lineNum">     292 </span>                :            :      *                  is not compatible.
+<span class="lineNum">     293 </span>                :            :      */
+<span class="lineNum">     294 </span>                :            :     std::vector&lt;Xapian::FeatureVector&gt;
+<span class="lineNum">     295 </span>                :            :     rank_fvv(const std::vector&lt;Xapian::FeatureVector&gt; &amp; fvv) const;
+<span class="lineNum">     296 </span>                :            : 
+<span class="lineNum">     297 </span>                :            :   public:
+<span class="lineNum">     298 </span>                :            :     /* Construct ListNet instance
+<span class="lineNum">     299 </span>                :            :      * @param learn_rate       Learning rate
+<a name="300"><span class="lineNum">     300 </span>                :            :      * @param num_interations  Number of iterations</a>
+<span class="lineNum">     301 </span>                :            :      */
+<span class="lineNum">     302 </span>                :<span class="lineCov">          1 :     explicit ListNETRanker(double learn_rate = 0.001,</span>
+<span class="lineNum">     303 </span>                :            :                             int num_interations = 15):
+<span class="lineNum">     304 </span>                :<span class="lineCov">          1 :          learning_rate(learn_rate), iterations(num_interations) { }</span>
+<span class="lineNum">     305 </span>                :            : 
+<span class="lineNum">     306 </span>                :            :     /// Destructor
+<span class="lineNum">     307 </span>                :            :     ~ListNETRanker();
+<span class="lineNum">     308 </span>                :            : 
+<span class="lineNum">     309 </span>                :            : };
+<span class="lineNum">     310 </span>                :            : 
+<span class="lineNum">     311 </span>                :            : /// SVMRanker class
+<span class="lineNum">     312 </span>                :            : class XAPIAN_VISIBILITY_DEFAULT SVMRanker: public Ranker {
+<span class="lineNum">     313 </span>                :            :     /// Model data string
+<span class="lineNum">     314 </span>                :            :     std::string model_data;
+<span class="lineNum">     315 </span>                :            : 
+<span class="lineNum">     316 </span>                :            :     /** Method to train the model.
+<span class="lineNum">     317 </span>                :            :      *
+<span class="lineNum">     318 </span>                :            :      *  @exception LetorInternalError will be thrown if training data is null.
+<span class="lineNum">     319 </span>                :            :      */
+<span class="lineNum">     320 </span>                :            :     void train(const std::vector&lt;Xapian::FeatureVector&gt; &amp; training_data);
+<span class="lineNum">     321 </span>                :            : 
+<span class="lineNum">     322 </span>                :            :     /** Method to save SVMRanker model as db metadata.
+<span class="lineNum">     323 </span>                :            :      *
+<span class="lineNum">     324 </span>                :            :      *  @param model_key      Metadata key using which model is to be stored.
+<span class="lineNum">     325 </span>                :            :      */
+<span class="lineNum">     326 </span>                :            :     void save_model_to_metadata(const std::string &amp; model_key);
+<span class="lineNum">     327 </span>                :            : 
+<span class="lineNum">     328 </span>                :            :     /** Method to load model from an external file.
+<span class="lineNum">     329 </span>                :            :      *
+<span class="lineNum">     330 </span>                :            :      *  @param model_key        Metadata key using which model is to be
+<span class="lineNum">     331 </span>                :            :      *                          loaded.
+<span class="lineNum">     332 </span>                :            :      *
+<span class="lineNum">     333 </span>                :            :      *  @exception LetorInternalError will be thrown if no model exists
+<span class="lineNum">     334 </span>                :            :      *             corresponding to the supplied key
+<span class="lineNum">     335 </span>                :            :      */
+<span class="lineNum">     336 </span>                :            :     void load_model_from_metadata(const std::string &amp; model_key);
+<span class="lineNum">     337 </span>                :            : 
+<span class="lineNum">     338 </span>                :            :     /** Method to re-rank a std::vector&lt;Xapian::FeatureVector&gt; by using the
+<span class="lineNum">     339 </span>                :            :      *  model.
+<span class="lineNum">     340 </span>                :            :      *
+<span class="lineNum">     341 </span>                :            :      *  @param fvv vector&lt;FeatureVector&gt; that will be re-ranked
+<span class="lineNum">     342 </span>                :            :      */
+<span class="lineNum">     343 </span>                :            :     std::vector&lt;Xapian::FeatureVector&gt;
+<span class="lineNum">     344 </span>                :            :     rank_fvv(const std::vector&lt;Xapian::FeatureVector&gt; &amp; fvv) const;
+<span class="lineNum">     345 </span>                :            : 
+<span class="lineNum">     346 </span>                :            :   public:
+<span class="lineNum">     347 </span>                :            :     /* TODO: Pass struct svm_parameter* to constructor to be able to configure
+<span class="lineNum">     348 </span>                :            :      * libsvm params at run time.
+<span class="lineNum">     349 </span>                :            :      */
+<span class="lineNum">     350 </span>                :            :     /// Constructor
+<span class="lineNum">     351 </span>                :            :     SVMRanker();
+<span class="lineNum">     352 </span>                :            :     /// Destructor
+<span class="lineNum">     353 </span>                :            :     ~SVMRanker();
+<span class="lineNum">     354 </span>                :            : 
+<span class="lineNum">     355 </span>                :            : };
+<span class="lineNum">     356 </span>                :            : 
+<span class="lineNum">     357 </span>                :            : }
+<span class="lineNum">     358 </span>                :            : 
+<span class="lineNum">     359 </span>                :            : #endif /* RANKER_H */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

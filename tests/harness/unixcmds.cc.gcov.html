@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Test Coverage for xapian-letor 1ea61830e52d - tests/harness/unixcmds.cc</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">tests/harness</a> - unixcmds.cc<span style="font-size: 80%;"> (source / <a href="unixcmds.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Test Coverage for xapian-letor 1ea61830e52d</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">27</td>
+            <td class="headerCovTableEntryLo">11.1 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2017-07-23 17:44:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">4</td>
+            <td class="headerCovTableEntryLo">25.0 %</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntry">52</td>
+            <td class="headerCovTableEntryLo">5.8 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">           Branch data     Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>                :            : /** @file unixcmds.cc</a>
+<span class="lineNum">       2 </span>                :            :  *  @brief C++ function versions of useful Unix commands.
+<span class="lineNum">       3 </span>                :            :  */
+<span class="lineNum">       4 </span>                :            : /* Copyright (C) 2003,2004,2007,2012,2014,2015 Olly Betts
+<span class="lineNum">       5 </span>                :            :  *
+<span class="lineNum">       6 </span>                :            :  * This program is free software; you can redistribute it and/or
+<span class="lineNum">       7 </span>                :            :  * modify it under the terms of the GNU General Public License as
+<span class="lineNum">       8 </span>                :            :  * published by the Free Software Foundation; either version 2 of the
+<span class="lineNum">       9 </span>                :            :  * License, or (at your option) any later version.
+<span class="lineNum">      10 </span>                :            :  *
+<span class="lineNum">      11 </span>                :            :  * This program is distributed in the hope that it will be useful,
+<span class="lineNum">      12 </span>                :            :  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+<span class="lineNum">      13 </span>                :            :  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<span class="lineNum">      14 </span>                :            :  * GNU General Public License for more details.
+<span class="lineNum">      15 </span>                :            :  *
+<span class="lineNum">      16 </span>                :            :  * You should have received a copy of the GNU General Public License
+<span class="lineNum">      17 </span>                :            :  * along with this program; if not, write to the Free Software
+<span class="lineNum">      18 </span>                :            :  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+<span class="lineNum">      19 </span>                :            :  */
+<span class="lineNum">      20 </span>                :            : 
+<span class="lineNum">      21 </span>                :            : #include &lt;config.h&gt;
+<span class="lineNum">      22 </span>                :            : 
+<span class="lineNum">      23 </span>                :            : #include &quot;unixcmds.h&quot;
+<span class="lineNum">      24 </span>                :            : 
+<span class="lineNum">      25 </span>                :            : #include &lt;cstring&gt;
+<span class="lineNum">      26 </span>                :            : #include &lt;string&gt;
+<span class="lineNum">      27 </span>                :            : #include &lt;cstdlib&gt;
+<span class="lineNum">      28 </span>                :            : #include &lt;sys/types.h&gt;
+<span class="lineNum">      29 </span>                :            : #include &quot;safeunistd.h&quot;
+<span class="lineNum">      30 </span>                :            : #include &quot;safefcntl.h&quot;
+<span class="lineNum">      31 </span>                :            : 
+<span class="lineNum">      32 </span>                :            : #ifdef __WIN32__
+<span class="lineNum">      33 </span>                :            : # include &quot;safewindows.h&quot;
+<span class="lineNum">      34 </span>                :            : #endif
+<span class="lineNum">      35 </span>                :            : 
+<span class="lineNum">      36 </span>                :            : #include &quot;append_filename_arg.h&quot;
+<span class="lineNum">      37 </span>                :            : #include &quot;filetests.h&quot;
+<span class="lineNum">      38 </span>                :            : #include &quot;str.h&quot;
+<span class="lineNum">      39 </span>                :            : 
+<span class="lineNum">      40 </span>                :            : using namespace std;
+<span class="lineNum">      41 </span>                :            : 
+<a name="42"><span class="lineNum">      42 </span>                :            : /// Call system() and throw exception if it fails.</a>
+<span class="lineNum">      43 </span>                :            : static void
+<span class="lineNum">      44 </span>                :<span class="lineNoCov">          0 : checked_system(const string &amp; cmd)</span>
+<span class="lineNum">      45 </span>                :            : {
+<span class="lineNum">      46 </span>                :<span class="lineNoCov">          0 :     int res = system(cmd.c_str());</span>
+<span class="lineNum">      47 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if (res) {</span>
+<span class="lineNum">      48 </span>        [<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>]:<span class="lineNoCov">          0 :         string msg = &quot;system(\&quot;&quot;;</span>
+<span class="lineNum">      49 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :         msg += cmd;</span>
+<span class="lineNum">      50 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :         msg += &quot;\&quot;) failed, returning &quot;;</span>
+<span class="lineNum">      51 </span>[<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>][<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>]:<span class="lineNoCov">          0 :         msg += str(res);</span>
+<span class="lineNum">      52 </span>                :<span class="lineNoCov">          0 :         throw msg;</span>
+<span class="lineNum">      53 </span>                :            :     }
+<span class="lineNum">      54 </span>                :<span class="lineNoCov">          0 : }</span>
+<a name="55"><span class="lineNum">      55 </span>                :            : </a>
+<span class="lineNum">      56 </span>                :            : /// Recursively copy a directory.
+<span class="lineNum">      57 </span>                :<span class="lineNoCov">          0 : void cp_R(const std::string &amp;src, const std::string &amp;dest) {</span>
+<span class="lineNum">      58 </span>                :            : #ifdef __WIN32__
+<span class="lineNum">      59 </span>                :            :     // We create the target directory first to avoid being prompted as to
+<span class="lineNum">      60 </span>                :            :     // whether we want to create a directory or a file (which makes no sense
+<span class="lineNum">      61 </span>                :            :     // when copying a directory, but that's how xcopy seems to work!)
+<span class="lineNum">      62 </span>                :            :     mkdir(dest.c_str());
+<span class="lineNum">      63 </span>                :            :     string cmd(&quot;xcopy /E /Y&quot;);
+<span class="lineNum">      64 </span>                :            : #else
+<span class="lineNum">      65 </span>        [<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>]:<span class="lineNoCov">          0 :     string cmd(&quot;cp -R&quot;);</span>
+<span class="lineNum">      66 </span>                :            : #endif
+<span class="lineNum">      67 </span>[<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>][<span class="branchNoExec" title="Branch 3 was not executed"> # </span><span class="branchNoExec" title="Branch 4 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if (!append_filename_argument(cmd, src)) return;</span>
+<span class="lineNum">      68 </span>[<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>][<span class="branchNoExec" title="Branch 3 was not executed"> # </span><span class="branchNoExec" title="Branch 4 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if (!append_filename_argument(cmd, dest)) return;</span>
+<span class="lineNum">      69 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :     checked_system(cmd);</span>
+<span class="lineNum">      70 </span>                :            : #ifndef __WIN32__
+<span class="lineNum">      71 </span>                :            :     // Allow write access to the copy (to deal with builds where srcdir is
+<span class="lineNum">      72 </span>                :            :     // readonly).
+<span class="lineNum">      73 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :     cmd = &quot;chmod -R +w&quot;;</span>
+<span class="lineNum">      74 </span>[<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>][<span class="branchNoExec" title="Branch 3 was not executed"> # </span><span class="branchNoExec" title="Branch 4 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if (!append_filename_argument(cmd, dest)) return;</span>
+<span class="lineNum">      75 </span>[<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>][<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>]:<span class="lineNoCov">          0 :     checked_system(cmd);</span>
+<span class="lineNum">      76 </span>                :            : #endif
+<span class="lineNum">      77 </span>                :            : }
+<a name="78"><span class="lineNum">      78 </span>                :            : </a>
+<span class="lineNum">      79 </span>                :            : /// Remove a directory and contents, just like the Unix &quot;rm -rf&quot; command.
+<span class="lineNum">      80 </span>                :<span class="lineCov">          2 : void rm_rf(const string &amp;filename) {</span>
+<span class="lineNum">      81 </span>                :            :     // Check filename exists and is actually a directory
+<span class="lineNum">      82 </span>[<span class="branchCov" title="Branch 1 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>][<span class="branchCov" title="Branch 4 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 5 was not taken"> - </span>]:<span class="lineCov">          2 :     if (filename.empty() || !dir_exists(filename))</span>
+<span class="lineNum">         </span>        [<span class="branchCov" title="Branch 6 was taken 2 times"> + </span><span class="branchNoCov" title="Branch 7 was not taken"> - </span>]
+<span class="lineNum">      83 </span>                :<span class="lineCov">          2 :         return;</span>
+<span class="lineNum">      84 </span>                :            : 
+<span class="lineNum">      85 </span>                :            : #ifdef __WIN32__
+<span class="lineNum">      86 </span>                :            :     string cmd(&quot;rd /s /q&quot;);
+<span class="lineNum">      87 </span>                :            : #else
+<span class="lineNum">      88 </span>        [<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>]:<span class="lineNoCov">          0 :     string cmd(&quot;rm -rf&quot;);</span>
+<span class="lineNum">      89 </span>                :            : #endif
+<span class="lineNum">      90 </span>[<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>][<span class="branchNoExec" title="Branch 3 was not executed"> # </span><span class="branchNoExec" title="Branch 4 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if (!append_filename_argument(cmd, filename)) return;</span>
+<span class="lineNum">      91 </span>[<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>][<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>]:<span class="lineNoCov">          0 :     checked_system(cmd);</span>
+<span class="lineNum">      92 </span>                :            : }
+<a name="93"><span class="lineNum">      93 </span>                :            : </a>
+<span class="lineNum">      94 </span>                :            : /// Touch a file, just like the Unix &quot;touch&quot; command.
+<span class="lineNum">      95 </span>                :<span class="lineNoCov">          0 : void touch(const string &amp;filename) {</span>
+<span class="lineNum">      96 </span>                :<span class="lineNoCov">          0 :     int fd = open(filename.c_str(), O_CREAT|O_WRONLY|O_BINARY, 0644);</span>
+<span class="lineNum">      97 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if (fd &gt;= 0) close(fd);</span>
+<span class="lineNum">      98 </span>                :<span class="lineNoCov">          0 : }</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

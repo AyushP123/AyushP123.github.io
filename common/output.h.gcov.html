@@ -1,0 +1,168 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - Test Coverage for xapian-letor 1ea61830e52d - common/output.h</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">common</a> - output.h<span style="font-size: 80%;"> (source / <a href="output.h.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">Test Coverage for xapian-letor 1ea61830e52d</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2017-07-23 17:44:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">           Branch data     Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>                :            : /** @file output.h</a>
+<span class="lineNum">       2 </span>                :            :  * @brief Functions for output of strings describing Xapian objects.
+<span class="lineNum">       3 </span>                :            :  */
+<span class="lineNum">       4 </span>                :            : /*
+<span class="lineNum">       5 </span>                :            :  * Copyright 1999,2000,2001 BrightStation PLC
+<span class="lineNum">       6 </span>                :            :  * Copyright 2002 Ananova Ltd
+<span class="lineNum">       7 </span>                :            :  * Copyright 2002,2003,2004,2007,2009,2011 Olly Betts
+<span class="lineNum">       8 </span>                :            :  * Copyright 2007 Lemur Consulting Ltd
+<span class="lineNum">       9 </span>                :            :  * Copyright 2010 Richard Boulton
+<span class="lineNum">      10 </span>                :            :  *
+<span class="lineNum">      11 </span>                :            :  * This program is free software; you can redistribute it and/or
+<span class="lineNum">      12 </span>                :            :  * modify it under the terms of the GNU General Public License as
+<span class="lineNum">      13 </span>                :            :  * published by the Free Software Foundation; either version 2 of the
+<span class="lineNum">      14 </span>                :            :  * License, or (at your option) any later version.
+<span class="lineNum">      15 </span>                :            :  *
+<span class="lineNum">      16 </span>                :            :  * This program is distributed in the hope that it will be useful,
+<span class="lineNum">      17 </span>                :            :  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+<span class="lineNum">      18 </span>                :            :  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<span class="lineNum">      19 </span>                :            :  * GNU General Public License for more details.
+<span class="lineNum">      20 </span>                :            :  *
+<span class="lineNum">      21 </span>                :            :  * You should have received a copy of the GNU General Public License
+<span class="lineNum">      22 </span>                :            :  * along with this program; if not, write to the Free Software
+<span class="lineNum">      23 </span>                :            :  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301
+<span class="lineNum">      24 </span>                :            :  * USA
+<span class="lineNum">      25 </span>                :            :  */
+<span class="lineNum">      26 </span>                :            : 
+<span class="lineNum">      27 </span>                :            : #ifndef XAPIAN_INCLUDED_OUTPUT_H
+<span class="lineNum">      28 </span>                :            : #define XAPIAN_INCLUDED_OUTPUT_H
+<span class="lineNum">      29 </span>                :            : 
+<span class="lineNum">      30 </span>                :            : #include &lt;ostream&gt;
+<span class="lineNum">      31 </span>                :            : 
+<span class="lineNum">      32 </span>                :            : /// @Internal Helper macro for defining stream output of Xapian class.
+<span class="lineNum">      33 </span>                :            : #define XAPIAN_OUTPUT_FUNCTION(CLASS) \
+<span class="lineNum">      34 </span>                :            : inline std::ostream &amp; \
+<span class="lineNum">      35 </span>                :            : operator&lt;&lt;(std::ostream &amp; os, const CLASS &amp; object) { \
+<span class="lineNum">      36 </span>                :            :     return os &lt;&lt; object.get_description(); \
+<span class="lineNum">      37 </span>                :            : }
+<span class="lineNum">      38 </span>                :            : 
+<span class="lineNum">      39 </span>                :            : #include &lt;xapian/database.h&gt;
+<span class="lineNum">      40 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::Database)
+<span class="lineNum">      41 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::WritableDatabase)
+<span class="lineNum">      42 </span>                :            : 
+<span class="lineNum">      43 </span>                :            : #include &lt;xapian/document.h&gt;
+<span class="lineNum">      44 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::Document)
+<span class="lineNum">      45 </span>                :            : 
+<span class="lineNum">      46 </span>                :            : #include &lt;xapian/query.h&gt;
+<span class="lineNum">      47 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::Query)
+<span class="lineNum">      48 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::Query::Internal)
+<span class="lineNum">      49 </span>                :            : 
+<span class="lineNum">      50 </span>                :            : #include &lt;xapian/enquire.h&gt;
+<a name="51"><span class="lineNum">      51 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::RSet)</a>
+<span class="lineNum">      52 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::MSetIterator)
+<span class="lineNum">      53 </span>        [<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>]:<span class="lineNoCov">          0 : XAPIAN_OUTPUT_FUNCTION(Xapian::MSet)</span>
+<span class="lineNum">      54 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::ESetIterator)
+<span class="lineNum">      55 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::ESet)
+<span class="lineNum">      56 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::Enquire)
+<span class="lineNum">      57 </span>                :            : 
+<span class="lineNum">      58 </span>                :            : #include &lt;xapian/geospatial.h&gt;
+<span class="lineNum">      59 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::LatLongCoord)
+<span class="lineNum">      60 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::LatLongCoords)
+<span class="lineNum">      61 </span>                :            : 
+<span class="lineNum">      62 </span>                :            : #include &lt;xapian/stem.h&gt;
+<span class="lineNum">      63 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::Stem)
+<span class="lineNum">      64 </span>                :            : 
+<span class="lineNum">      65 </span>                :            : #include &lt;xapian/postingiterator.h&gt;
+<span class="lineNum">      66 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::PostingIterator)
+<span class="lineNum">      67 </span>                :            : 
+<span class="lineNum">      68 </span>                :            : #include &lt;xapian/positioniterator.h&gt;
+<span class="lineNum">      69 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::PositionIterator)
+<span class="lineNum">      70 </span>                :            : 
+<span class="lineNum">      71 </span>                :            : #include &lt;xapian/termiterator.h&gt;
+<span class="lineNum">      72 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::TermIterator)
+<span class="lineNum">      73 </span>                :            : 
+<span class="lineNum">      74 </span>                :            : #include &lt;xapian/valueiterator.h&gt;
+<span class="lineNum">      75 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::ValueIterator)
+<span class="lineNum">      76 </span>                :            : 
+<span class="lineNum">      77 </span>                :            : #include &lt;xapian/matchspy.h&gt;
+<span class="lineNum">      78 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::MatchSpy)
+<span class="lineNum">      79 </span>                :            : 
+<span class="lineNum">      80 </span>                :            : #include &lt;xapian/postingsource.h&gt;
+<span class="lineNum">      81 </span>                :            : XAPIAN_OUTPUT_FUNCTION(Xapian::PostingSource)
+<span class="lineNum">      82 </span>                :            : 
+<span class="lineNum">      83 </span>                :            : #endif /* XAPIAN_INCLUDED_OUTPUT_H */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
