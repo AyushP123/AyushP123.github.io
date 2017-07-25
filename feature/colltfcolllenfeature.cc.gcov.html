@@ -4,7 +4,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>LCOV - Test Coverage for xapian-letor 1ea61830e52d - feature/colltfcolllenfeature.cc</title>
+  <title>LCOV - Test Coverage for xapian-letor b26074ffb89c - feature/colltfcolllenfeature.cc</title>
   <link rel="stylesheet" type="text/css" href="../gcov.css">
 </head>
 
@@ -28,30 +28,30 @@
           </tr>
           <tr>
             <td class="headerItem">Test:</td>
-            <td class="headerValue">Test Coverage for xapian-letor 1ea61830e52d</td>
+            <td class="headerValue">Test Coverage for xapian-letor b26074ffb89c</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">42</td>
+            <td class="headerCovTableEntry">44</td>
             <td class="headerCovTableEntry">48</td>
-            <td class="headerCovTableEntryMed">87.5 %</td>
+            <td class="headerCovTableEntryHi">91.7 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2017-07-23 17:44:22</td>
+            <td class="headerValue">2017-07-25 11:11:24</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">2</td>
             <td class="headerCovTableEntry">3</td>
-            <td class="headerCovTableEntryLo">66.7 %</td>
+            <td class="headerCovTableEntry">3</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
           </tr>
           <tr>
             <td></td>
             <td></td>
             <td></td>
             <td class="headerItem">Branches:</td>
-            <td class="headerCovTableEntry">42</td>
+            <td class="headerCovTableEntry">43</td>
             <td class="headerCovTableEntry">74</td>
-            <td class="headerCovTableEntryLo">56.8 %</td>
+            <td class="headerCovTableEntryLo">58.1 %</td>
           </tr>
           <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -102,9 +102,9 @@
 <span class="lineNum">      31 </span>                :            : namespace Xapian {
 <a name="32"><span class="lineNum">      32 </span>                :            : </a>
 <span class="lineNum">      33 </span>                :            : string
-<span class="lineNum">      34 </span>                :<span class="lineNoCov">          0 : CollTfCollLenFeature::name() const</span>
+<span class="lineNum">      34 </span>                :<span class="lineCov">          1 : CollTfCollLenFeature::name() const</span>
 <span class="lineNum">      35 </span>                :            : {
-<span class="lineNum">      36 </span>        [<span class="branchNoExec" title="Branch 2 was not executed"> # </span><span class="branchNoExec" title="Branch 3 was not executed"> # </span>]:<span class="lineNoCov">          0 :     return &quot;CollTfCollLenFeature&quot;;</span>
+<span class="lineNum">      36 </span>        [<span class="branchCov" title="Branch 2 was taken 1 time"> + </span><span class="branchNoCov" title="Branch 3 was not taken"> - </span>]:<span class="lineCov">          1 :     return &quot;CollTfCollLenFeature&quot;;</span>
 <span class="lineNum">      37 </span>                :            : }
 <span class="lineNum">      38 </span>                :            : 
 <span class="lineNum">      39 </span>                :            : /** A helper function for feature-&gt;get_value()
